@@ -5,17 +5,7 @@ import * as moment from 'moment'
 var mixin = {
   data: function() {
     return {
-      get global() {
-        return {
-          // api: 'http://mle.dominet.com.vn/api/'
-          // api: 'http://localhost/mle/api/'
-          message: {
-            success: 'success',
-            danger: 'danger',
-            warning: 'warning'
-          }
-        }
-      }
+      get global() {}
     }
   },
   beforeCreate: function() {},
@@ -35,16 +25,16 @@ var mixin = {
       if (format === 'time') return moment().format('hh:mm:ss')
       else return moment().format(format)
     },
-    FixEditor($this) {
-      $this.$refs.modalCRUD.$el.children[0].children[0].children[0].children[0].removeAttribute('tabindex')
-    },
-    ShowNotify(group = 'appNotify') {
-      this.$notify({
-        group: group,
-        type: store.state._message.type,
-        text: store.state._message.text
-      })
-    },
+    // FixEditor($this) {
+    //   $this.$refs.modalCRUD.$el.children[0].children[0].children[0].children[0].removeAttribute('tabindex')
+    // },
+    // ShowNotify(group = 'appNotify') {
+    //   this.$notify({
+    //     group: group,
+    //     type: store.state._message.type,
+    //     text: store.state._message.text
+    //   })
+    // },
     FilesToString(files, chars = ',') {
       var rs = ''
       if (!files) return rs
