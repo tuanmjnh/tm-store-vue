@@ -1,6 +1,6 @@
 {
-  "name": "tm-shop-vue",
-  "version": "0.1.0",
+  "name": "tm-store-vue",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
