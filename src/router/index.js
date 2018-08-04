@@ -32,6 +32,23 @@ const routes = [{
     ]
   },
   {
+    path: '/languages',
+    name: 'languages',
+    alias: '',
+    component: () => import ('../pages/languages/index'),
+    meta: { description: 'Overview of environment',  requiresAuth: true},
+    children: [{
+        path: '',
+        component: () => import ('../pages/languages/list')
+      },
+      {
+        path: 'add',
+        // props: true,
+        component: () => import ('../pages/languages/add')
+      }
+    ]
+  },
+  {
     // not found handler
     path: '*',
     component: () => import ('../pages/not-found/index')

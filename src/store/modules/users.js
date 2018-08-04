@@ -1,5 +1,5 @@
 import { SET_CATCH, SET_ITEMS, SET_ITEM, PUSH_ITEM } from '../mutation-type'
-import { FBStore } from '@/plugins/firebaseInit'
+import { FBStore, FBAuth } from '@/plugins/firebaseInit'
 export default {
   namespaced: true,
   state: {
@@ -40,18 +40,23 @@ export default {
     }
   },
   actions: {
-    async select({ commit, state }) {
-      return FBStore.collection("languages").get().then(function(querySnapshot) {
+    select({ commit, state }) {
+      return FBStore.collection("users").get().then(function(querySnapshot) {
         querySnapshot.forEach(function(doc) {
           // doc.data() is never undefined for query doc snapshots
-          // console.log(doc.id, " => ", doc.data());
+          // console.log(doc.id, " => ", doc.data())
           var items = state.default
-          items = doc.data();
-          items.id = doc.id;
-          console.log()
-          commit(SET_ITEMS, items);
-        });
+          items = doc.data()
+          items.id = doc.id
+          commit(SET_ITEMS, items)
+        })
       }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
+    },
+    insert({ commit, state }) {
+      state.item.created = { by: 'Admin', at: new Date() }
+      FBStore.collection("users")
+        .add(state.item).then((item) => { commit(PUSH_ITEM, item) })
+        .catch(function(error) { commit(SET_CATCH, error, { root: true }) })
     }
     // async insert({ commit, state }, data) {
     //   await axios.mle
@@ -76,12 +81,12 @@ export default {
     // },
     // async delete({ commit, state }, data) {
     //   var _data = []
-    //   data.forEach(i => { _data.push({ uid: i.selected.uid, status: i.status }) });
+    //   data.forEach(i => { _data.push({ uid: i.selected.uid, status: i.status }) })
     //   await axios.mle
     //     .put(controller + this.state._action.delete, data)
     //     .then(function(res) {
     //       if (res.status === 200) {
-    //         data.forEach(i => { i.selected.status = i.status });
+    //         data.forEach(i => { i.selected.status = i.status })
     //         commit(types.SET_SELECTED, state.default)
     //       }
     //       commit(types.SET_MESSAGE, res, { root: true })
