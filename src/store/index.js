@@ -1,15 +1,19 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import * as types from './mutation-type'
+import {SET_MESSAGE, SET_CATCH} from './mutation-type'
 //
 // import state from './state'
 // import actions from './actions'
 // import mutations from './mutations'
 // modules
 // import nav from './modules/nav'
+import users from './modules/users'
+import languages from './modules/languages'
 Vue.use(Vuex)
 export default new Vuex.Store({
-  modules: {},
+  modules: {
+    users
+  },
   state: {
     _noimage: `Uploads/noimage.jpg`,
     _message: {},
@@ -17,17 +21,17 @@ export default new Vuex.Store({
   getters: {}, // = computed properties
   actions: {}, // Actions
   mutations: {
-    [types.SET_MESSAGE](state, res) {
+    [SET_MESSAGE](state, res) {
       state._message = res.data.message || {}
       state._message.status = res.status || 0
       state._message.statusText = res.statusText || 'Error'
     },
-    [types.AXIOS_CATCH](state, error) {
+    [SET_CATCH](state, error) {
       state._message = {
         type: 'danger',
         text: 'Không thể kết nối đến máy chủ, vui lòng thực hiện lại!', // error.response ? error.response.statusText : error,
         status: error.response ? error.response.status : 0,
-        statusText: error.response ? error.response.statusText : 'Error'
+        statusText: error.response ? error.response.statusText : error
       }
     }
   } // Mutations

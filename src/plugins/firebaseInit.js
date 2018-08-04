@@ -12,15 +12,15 @@ var config = {
   messagingSenderId: "45492650401"
 };
 !firebase.apps.length ? firebase.initializeApp(config) : ''
-// const settings = {
-//   timestampsInSnapshots: true
-// } // your settings...
+ const settings = {
+   timestampsInSnapshots: true
+ } // your settings...
 export const GoogleProvider = new firebase.auth.GoogleAuthProvider()
 export const FBAuth = firebase.auth()
 export const FBStorage = firebase.storage()
 // export const FBDB = firebase.database()
 export const FBStore = firebase.firestore()
+FBStore.settings(settings)
 // export const FBMessaging = firebase.messaging()
 // export const FBFuntions = firebase.functions()
-// StoreDB.settings(settings)
 export default firebase

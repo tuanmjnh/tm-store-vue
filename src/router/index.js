@@ -14,30 +14,23 @@ const routes = [{
     meta: { description: 'Overview of environment', requiresAuth: true },
     component: () => import ('../pages/dashboard/index')
   },
-  // {
-  //   path: '/class',
-  //   alias: '',
-  //   component: () =>
-  //     import ('../pages/class/index'),
-  //   name: 'class',
-  //   meta: {
-  //     description: 'Overview of environment',
-  //     requiresAuth: true
-  //   },
-  //   children: [{
-  //       path: '',
-  //       component: () =>
-  //         import ('../pages/class/list')
-  //     },
-  //     {
-  //       path: 'class-component/:id',
-  //       name: 'class-component',
-  //       props: true,
-  //       component: () =>
-  //         import ('../pages/class/class-component')
-  //     }
-  //   ]
-  // },
+  {
+    path: '/users',
+    name: 'users',
+    alias: '',
+    component: () => import ('../pages/users/index'),
+    meta: { description: 'Overview of environment',  requiresAuth: true},
+    children: [{
+        path: '',
+        component: () => import ('../pages/users/list')
+      },
+      {
+        path: 'add',
+        // props: true,
+        component: () => import ('../pages/users/add')
+      }
+    ]
+  },
   {
     // not found handler
     path: '*',

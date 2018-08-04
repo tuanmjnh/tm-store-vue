@@ -1,26 +1,20 @@
-import * as axios from '@/utils/axios-config'
-import * as types from '../mutation-type'
-const controller = 'users/'
+import { SET_CATCH, SET_ITEMS, SET_ITEM, PUSH_ITEM } from '../mutation-type'
+import { FBStore } from '@/plugins/firebaseInit'
 export default {
   namespaced: true,
   state: {
-    data: [],
-    selected: {},
+    items: [],
+    item: {},
     default: {
-      uid: 0,
       username: '',
       password: '',
       full_name: '',
       email: '',
       image: '',
-      role_view: ',',
-      role_update: ',',
-      role_delete: ',',
-      created_by: '',
-      created_at: new Date(),
-      updated_by: '',
-      updated_at: null,
-      status: 1
+      created: { by: '', at: new Date() },
+      updated: { by: '', at: null },
+      deleted: { by: '', at: null },
+      flag: 1
     }
   },
   getters: {
@@ -34,71 +28,75 @@ export default {
       return state.data.filter(data => data.status === status)
     }
   },
-  actions: {
-    async select({ commit }, query) {
-      await axios.mle
-        .get(controller + query)
-        .then(function(res) {
-          if (res.status === 200) commit(types.SET_DATA, res.data.data)
-          commit(types.SET_MESSAGE, res, { root: true })
-        })
-        .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
-    },
-    async insert({ commit, state }, data) {
-      await axios.mle
-        .post(controller, data)
-        .then(function(res) {
-          if (res.status === 200) {
-            commit(types.PUSH_DATA, res.data.data)
-            commit(types.SET_SELECTED, state.default)
-          }
-          commit(types.SET_MESSAGE, res, { root: true })
-        })
-        .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
-    },
-    async update({ commit }, data) {
-      await axios.mle
-        .put(controller + data.uid, data)
-        .then(function(res) {
-          if (res.status === 200) data.data = res.data
-          commit(types.SET_MESSAGE, res, { root: true })
-        })
-        .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
-    },
-    async delete({ commit, state }, data) {
-      var _data = []
-      data.forEach(i => { _data.push({ uid: i.selected.uid, status: i.status }) });
-      await axios.mle
-        .put(controller + this.state._action.delete, data)
-        .then(function(res) {
-          if (res.status === 200) {
-            data.forEach(i => { i.selected.status = i.status });
-            commit(types.SET_SELECTED, state.default)
-          }
-          commit(types.SET_MESSAGE, res, { root: true })
-        })
-        .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
-    },
-    async selected({ commit, state }, data) {
-      if (data) commit(types.SET_SELECTED, data)
-      else commit(types.SET_SELECTED, state.default)
-    },
-    async updateq({ commit }, data) {
-      await axios.mle
-        .put(controller + this.state._action.quick_edit, data)
-        .then(function(res) { commit(types.SET_MESSAGE, res, { root: true }) })
-        .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
-    }
-  },
   mutations: {
-    [types.SET_DATA](state, data) {
+    [SET_ITEMS](state, data) {
       state.data = data
     },
-    [types.SET_SELECTED](state, selected) {
+    [SET_ITEM](state, selected) {
       state.selected = selected
     },
-    [types.PUSH_DATA](state, item) {
+    [PUSH_ITEM](state, item) {
       state.data.push(item)
     }
+  },
+  actions: {
+    async select({ commit, state }) {
+      return FBStore.collection("languages").get().then(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+          // doc.data() is never undefined for query doc snapshots
+          // console.log(doc.id, " => ", doc.data());
+          var items = state.default
+          items = doc.data();
+          items.id = doc.id;
+          console.log()
+          commit(SET_ITEMS, items);
+        });
+      }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
+    }
+    // async insert({ commit, state }, data) {
+    //   await axios.mle
+    //     .post(controller, data)
+    //     .then(function(res) {
+    //       if (res.status === 200) {
+    //         commit(types.PUSH_DATA, res.data.data)
+    //         commit(types.SET_SELECTED, state.default)
+    //       }
+    //       commit(types.SET_MESSAGE, res, { root: true })
+    //     })
+    //     .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
+    // },
+    // async update({ commit }, data) {
+    //   await axios.mle
+    //     .put(controller + data.uid, data)
+    //     .then(function(res) {
+    //       if (res.status === 200) data.data = res.data
+    //       commit(types.SET_MESSAGE, res, { root: true })
+    //     })
+    //     .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
+    // },
+    // async delete({ commit, state }, data) {
+    //   var _data = []
+    //   data.forEach(i => { _data.push({ uid: i.selected.uid, status: i.status }) });
+    //   await axios.mle
+    //     .put(controller + this.state._action.delete, data)
+    //     .then(function(res) {
+    //       if (res.status === 200) {
+    //         data.forEach(i => { i.selected.status = i.status });
+    //         commit(types.SET_SELECTED, state.default)
+    //       }
+    //       commit(types.SET_MESSAGE, res, { root: true })
+    //     })
+    //     .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
+    // },
+    // async selected({ commit, state }, data) {
+    //   if (data) commit(types.SET_SELECTED, data)
+    //   else commit(types.SET_SELECTED, state.default)
+    // },
+    // async updateq({ commit }, data) {
+    //   await axios.mle
+    //     .put(controller + this.state._action.quick_edit, data)
+    //     .then(function(res) { commit(types.SET_MESSAGE, res, { root: true }) })
+    //     .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
+    // }
   }
 }
