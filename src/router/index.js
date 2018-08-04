@@ -18,15 +18,19 @@ const routes = [{
     path: '/users',
     name: 'users',
     alias: '',
+    redirect: { name: 'users-list' },
     component: () => import ('../pages/users/index'),
-    meta: { description: 'Overview of environment',  requiresAuth: true},
+    meta: { description: 'Overview of environment', requiresAuth: true },
     children: [{
-        path: '',
+        path: 'list',
+        name: 'users-list',
+        props: true,
         component: () => import ('../pages/users/list')
       },
       {
         path: 'add',
-        // props: true,
+        name: 'users-add',
+        props: true,
         component: () => import ('../pages/users/add')
       }
     ]
@@ -35,15 +39,19 @@ const routes = [{
     path: '/languages',
     name: 'languages',
     alias: '',
+    redirect: { name: 'languages-list' },
     component: () => import ('../pages/languages/index'),
-    meta: { description: 'Overview of environment',  requiresAuth: true},
+    meta: { description: 'Overview of environment', requiresAuth: true },
     children: [{
-        path: '',
+        path: 'list',
+        name: 'languages-list',
+        props: true,
         component: () => import ('../pages/languages/list')
       },
       {
         path: 'add',
-        // props: true,
+        name: 'languages-add',
+        props: true,
         component: () => import ('../pages/languages/add')
       }
     ]
@@ -51,7 +59,8 @@ const routes = [{
   {
     // not found handler
     path: '*',
-    component: () => import ('../pages/not-found/index')
+    component: () =>
+      import ('../pages/not-found/index')
   }
 ]
 Vue.use(VueRouter)

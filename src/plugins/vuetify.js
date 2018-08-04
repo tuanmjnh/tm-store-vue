@@ -10,10 +10,23 @@ import {
   VGrid,
   VToolbar,
   VDivider,
+  VMenu,
+  VCard,
+  VTooltip,
+  VSwitch,
+  VCheckbox,
+  VCombobox,
+  VSelect,
+  VTextField,
+  VAlert,
+  VDataTable,
+  VPagination,
+  VDatePicker,
+  VDialog,
+  VSnackbar,
   transitions
 } from 'vuetify'
 import 'vuetify/src/stylus/app.styl'
-
 Vue.use(Vuetify, {
   components: {
     VApp,
@@ -25,10 +38,24 @@ Vue.use(Vuetify, {
     VGrid,
     VToolbar,
     VDivider,
+    VMenu,
+    VCard,
+    VTooltip,
+    VSwitch,
+    VCheckbox,
+    VCombobox,
+    VSelect,
+    VTextField,
+    VAlert,
+    VDataTable,
+    VPagination,
+    VDatePicker,
+    VDialog,
+    VSnackbar,
     transitions
   },
   theme: {
-    primary: '#ee44aa',
+    primary: '#1976D2',
     secondary: '#424242',
     accent: '#82B1FF',
     error: '#FF5252',
