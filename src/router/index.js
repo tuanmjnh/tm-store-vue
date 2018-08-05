@@ -18,44 +18,58 @@ const routes = [{
     path: '/users',
     name: 'users',
     alias: '',
-    redirect: { name: 'users-list' },
     component: () => import ('../pages/users/index'),
-    meta: { description: 'Overview of environment', requiresAuth: true },
-    children: [{
-        path: 'list',
-        name: 'users-list',
-        props: true,
-        component: () => import ('../pages/users/list')
-      },
-      {
-        path: 'add',
-        name: 'users-add',
-        props: true,
-        component: () => import ('../pages/users/add')
-      }
-    ]
+    meta: { description: 'Overview of environment', requiresAuth: true }
+  },
+  {
+    path: '/roles',
+    name: 'roles',
+    alias: '',
+    component: () => import ('../pages/roles/index'),
+    meta: { description: 'Overview of environment', requiresAuth: true }
+  },
+  {
+    path: '/modules',
+    name: 'modules',
+    alias: '',
+    component: () => import ('../pages/modules/index'),
+    meta: { description: 'Overview of environment', requiresAuth: true }
   },
   {
     path: '/languages',
     name: 'languages',
     alias: '',
-    redirect: { name: 'languages-list' },
     component: () => import ('../pages/languages/index'),
-    meta: { description: 'Overview of environment', requiresAuth: true },
-    children: [{
-        path: 'list',
-        name: 'languages-list',
-        props: true,
-        component: () => import ('../pages/languages/list')
-      },
-      {
-        path: 'add',
-        name: 'languages-add',
-        props: true,
-        component: () => import ('../pages/languages/add')
-      }
-    ]
+    meta: { description: 'Overview of environment', requiresAuth: true }
   },
+  {
+    path: '/informations',
+    name: 'informations',
+    alias: '',
+    component: () => import ('../pages/informations/index'),
+    meta: { description: 'Overview of environment', requiresAuth: true }
+  },
+  // {
+  //   path: '/languages',
+  //   name: 'languages',
+  //   alias: '',
+  //   redirect: { name: 'languages-list' },
+  //   component: () => import ('../pages/languages/index'),
+  //   meta: { description: 'Overview of environment', requiresAuth: true },
+  //   children: [{
+  //       path: 'list',
+  //       name: 'languages-list',
+  //       props: true,
+  //       component: () => import ('../pages/languages/list')
+  //     },
+  //     {
+  //       path: 'add',
+  //       name: 'languages-add',
+  //       props: true,
+  //       component: () => import ('../pages/languages/add')
+  //     }
+  //   ]
+  // },
   {
     // not found handler
     path: '*',

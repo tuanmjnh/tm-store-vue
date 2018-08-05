@@ -14,6 +14,7 @@ import store from './store'
 import router from './router'
 // Firebase
 import { FBAuth } from './plugins/firebaseInit.js'
+// Components
 Vue.config.productionTip = false
 let app
 FBAuth.onAuthStateChanged(user => {

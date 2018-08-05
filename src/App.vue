@@ -120,26 +120,27 @@ export default {
       items: [
         { icon: 'home', title: 'Dashboard', push: 'dashboard' },
         {
-          icon: 'account_circle',
-          title: 'Users',
+          icon: 'developer_board',
+          title: 'Manager',
           push: 'users',
           children: [
-            { icon: 'list', title: 'List', push: 'users/list' },
-            { icon: 'add', title: 'Create', push: 'users/add' }
+            { icon: 'account_circle', title: 'Users', push: 'users' },
+            { icon: 'vpn_key', title: 'Roles', push: 'roles' },
+            { icon: 'apps', title: 'Modules', push: 'modules' },
           ]
         },
         {
-          icon: 'outlined_flag',
-          title: 'Languages',
+          icon: 'vertical_split',
+          title: 'Common',
           push: 'languages',
           children: [
-            { icon: 'list', title: 'List', push: 'languages/list' },
-            { icon: 'add', title: 'Create', push: 'languages/add' }
+            { icon: 'outlined_flag', title: 'languages', push: 'languages' },
+            { icon: 'local_library', title: 'Informations', push: 'informations' }
           ]
         }],
       menuUser: [
         { icon: "ballot", title: "Profile", push: "profile" },
-        { icon: "control_camera", title: "Setting", push: "setting" },
+        { icon: "settings_applications", title: "Setting", push: "setting" },
         { icon: "exit_to_app", title: "Logout", go: "auth", store: "auth/logout" }
       ]
     }

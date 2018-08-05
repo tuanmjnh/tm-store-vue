@@ -30,6 +30,7 @@
     "vue-cli-plugin-vuetify": "^0.1.6",
     "vue-loader": "^15.2.6",
     "vue-notification": "^1.3.12",
+    "vue-quill-editor": "^3.0.6",
     "vue-router": "^3.0.1",
     "vue-template-compiler": "^2.5.16",
     "vue-tinymce-editor": "^1.6.2",

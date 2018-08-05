@@ -1,4 +1,4 @@
-import { SET_CATCH, SET_ITEMS, SET_ITEM, PUSH_ITEM } from '../mutation-type'
+import { SET_CATCH, SET_ITEMS, SET_ITEM, PUSH_ITEMS } from '../mutation-type'
 import { FBStore, FBAuth } from '@/plugins/firebaseInit'
 export default {
   namespaced: true,
@@ -35,7 +35,7 @@ export default {
     [SET_ITEM](state, selected) {
       state.selected = selected
     },
-    [PUSH_ITEM](state, item) {
+    [PUSH_ITEMS](state, item) {
       state.data.push(item)
     }
   },
@@ -55,7 +55,7 @@ export default {
     insert({ commit, state }) {
       state.item.created = { by: 'Admin', at: new Date() }
       FBStore.collection("users")
-        .add(state.item).then((item) => { commit(PUSH_ITEM, item) })
+        .add(state.item).then((item) => { commit(PUSH_ITEMS, item) })
         .catch(function(error) { commit(SET_CATCH, error, { root: true }) })
     }
     // async insert({ commit, state }, data) {
