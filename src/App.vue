@@ -56,6 +56,9 @@
       </v-btn> -->
       <!-- <v-toolbar-title v-text="title"></v-toolbar-title> -->
       <v-spacer></v-spacer>
+      <v-btn icon @click.stop="ShowSnackbar">
+        <v-icon>notifications</v-icon>
+      </v-btn>
       <v-btn icon @click.stop="rightDrawer = !rightDrawer">
         <v-icon>notifications</v-icon>
       </v-btn>
@@ -82,6 +85,14 @@
     <v-content>
       <!-- <HelloWorld/> -->
       <div class="container page">
+        <v-snackbar v-model="snackbar.show" :color="snackbar.color" :right="snackbar.x==='right'" :left="snackbar.x==='left'"
+          :bottom="snackbar.y==='bottom'" :top="snackbar.y==='top'" :timeout="snackbar.timeout"
+          :multi-line="snackbar.mode==='multi-line'" :vertical="snackbar.mode==='vertical'">
+          {{ snackbar.text }}
+          <v-btn color="" flat @click="snackbar.show=false">
+            <i class="material-icons">close</i>
+          </v-btn>
+        </v-snackbar>
         <router-view></router-view>
       </div>
     </v-content>
@@ -146,6 +157,10 @@ export default {
     }
   },
   computed: {
+    snackbar() {
+      var rs = this.$store.state._message
+      return rs
+    },
     clipped() {
       var mobile = !this.$vuetify.breakpoint.lgAndUp
       return mobile
@@ -156,6 +171,9 @@ export default {
       if (item.store) this.$store.commit(item.store);
       if (item.go) this.$router.go('/' + item.go);
       else this.$router.push('/' + item.push);
+    },
+    ShowSnackbar() {
+      this.$store.dispatch('message', { text: 'Hello, I\'m a snackbar' })
     }
   },
   created() { }

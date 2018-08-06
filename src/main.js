@@ -14,6 +14,8 @@ import store from './store'
 import router from './router'
 // Firebase
 import { FBAuth } from './plugins/firebaseInit.js'
+import VueFirestore from 'vue-firestore'
+Vue.use(VueFirestore)
 // Components
 Vue.config.productionTip = false
 let app

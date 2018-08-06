@@ -27,7 +27,10 @@ var mixin = {
     },
     FormatDate(val, format = 'DD/MM/YYYY hh:mm') {
       if (!val) return ''
-      return moment(val).format(format)
+      if (typeof val === 'object' && val.constructor.name === 'Timestamp')
+        return moment(val.toDate()).format(format)
+      else
+        return moment(val).format(format)
     },
     FixEditor($this) {
       $this.$refs.modalCRUD.$el.children[0].children[0].children[0].children[0].removeAttribute('tabindex')

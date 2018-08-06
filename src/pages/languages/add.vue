@@ -47,10 +47,9 @@ import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
 import { quillEditor } from 'vue-quill-editor'
+import { FBStore, timestamp } from '@/plugins/firebaseInit'
 export default {
-  components: {
-    quillEditor
-  },
+  components: { quillEditor },
   props: {
     dialog: { type: Boolean, default: false }
   },
@@ -59,10 +58,8 @@ export default {
     editedIndex: -1
   }),
   mounted() {
-    this.$store.dispatch('languages/selected')
+    this.$store.dispatch('languages/item')
     // this.FixEditor(this)
-    // this.item = this.$store.state.languages.default
-    // console.log(this.item)
   },
   computed: {
     formTitle() {
@@ -79,12 +76,13 @@ export default {
   },
   methods: {
     handleSave() {
-      this.$store.dispatch('languages/insert')
+      if (this.item.id) this.$store.dispatch('languages/update')
+      else this.$store.dispatch('languages/insert')
     },
     handleClose() {
       this.localDialog = false
       this.$emit('handleDialog', false)
-      this.$store.dispatch('languages/selected')
+      this.$store.dispatch('languages/item')
     }
   }
 }

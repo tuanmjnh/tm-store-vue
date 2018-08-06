@@ -3,6 +3,7 @@ export const SET_CATCH = 'SET_CATCH'
 export const SET_ITEMS = 'SET_ITEMS'
 export const SET_ITEM = 'SET_ITEM'
 export const PUSH_ITEMS = 'PUSH_ITEMS'
+export const UPDATE_ITEMS = 'UPDATE_ITEMS'
 // export {
 //   SET_MESSAGE,
 //   AXIOS_CATCH,

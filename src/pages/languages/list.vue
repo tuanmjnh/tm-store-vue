@@ -11,9 +11,9 @@
           <span>Add</span>
         </v-tooltip>
       </v-card-title>
-      <v-data-table v-model="selected" select-all item-key="name" :headers="headers" :items="items"
-        :pagination.sync="pagination" :total-items="totalDesserts" :loading="loading" :rows-per-page-items="rowPerPage"
-        class="elevation-1">
+      <v-data-table class="elevation-1" v-model="selected" select-all item-key="name" :headers="headers"
+        :items="fiter" :pagination.sync="pagination" :rows-per-page-items="rowPerPage" :total-items="totalItems">
+        <!--:loading="loading" :pagination.sync="pagination" :total-items="totalItems" -->
         <template slot="items" slot-scope="props">
           <tr>
             <td>
@@ -21,12 +21,13 @@
             </td>
             <td>{{ props.item.name }}</td>
             <td>{{ props.item.orders }}</td>
-            <td>{{ props.item.created?FormatDate(props.item.created.at):'' }}</td>
+            <td>{{ FormatDate(props.item.created.at,'DD/MM/YYYY hh:mm',true) }}</td>
+            <td>{{ props.item.flag }}</td>
             <td class="justify-center layout px-0">
-              <v-btn icon class="mx-0" @click="editItem(props.item)">
+              <v-btn icon class="mx-0" @click="handleEdit(props.item)">
                 <v-icon color="teal">edit</v-icon>
               </v-btn>
-              <v-btn icon class="mx-0" @click="deleteItem(props.item)">
+              <v-btn icon class="mx-0" @click="handleDelete(props.item)">
                 <v-icon color="pink">delete</v-icon>
               </v-btn>
             </td>
@@ -34,237 +35,123 @@
         </template>
       </v-data-table>
     </v-card>
+    <v-dialog v-model="confirmDialog" width="500">
+      <v-card>
+        <v-card-title class="headline grey lighten-2" primary-title>
+          Message
+        </v-card-title>
+        <v-card-text>
+          Are you sure?
+        </v-card-text>
+        <v-divider></v-divider>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="primary" flat @click="handleConfirm">
+            I accept
+          </v-btn>
+          <v-btn color="secondary" flat @click="confirmDialog=false">
+            Cancel
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <script>
+import { FBStore, timestamp } from '@/plugins/firebaseInit'
 export default {
-    props: {
-        dialog: { type: Boolean, default: false }
-    },
+    props: { dialog: { type: Boolean, default: false } },
     data: () => ({
         localDialog: false,
+        confirmDialog: false,
         loading: true,
-        desserts: [],
-        totalDesserts: 0,
         selected: [],
+        totalItems: 0,
         search: '',
         pagination: {},
         rowPerPage: [5, 10, 25, 50, 100, { text: "All", value: -1 }],
         headers: [
             { text: 'Name', value: 'name', align: 'left' },
             { text: 'Orders', value: 'orders' },
-            { text: 'Created', value: 'created' },
+            { text: 'Created', value: 'created.at' },
+            { text: 'Flag', value: 'flag' },
             { text: '#', value: '#', sortable: false }
         ],
-        editedIndex: -1,
-        defaultItem: {
-            name: '',
-            calories: 0,
-            fat: 0,
-            carbs: 0,
-            protein: 0
-        }
+        editedIndex: -1
     }),
     computed: {
         formTitle() {
             return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
         },
-        items() {
-            var items = this.$store.state.languages.items
-            return items
+        fiter() {
+            var query = {
+                search: this.search,
+                page: this.pagination.page,
+                descending: this.pagination.descending,
+                rowsPerPage: this.pagination.rowsPerPage,
+                sortBy: this.pagination.sortBy,
+                totalItems: this.pagination.totalItems,
+            }
+            var rs = this.$store.getters['languages/getFilter'](query)
+            return rs
         }
     },
     watch: {
-        pagination: {
-            handler() {
-                this.getDataFromApi().then(data => {
-                    this.desserts = data.items
-                    this.totalDesserts = data.total
-                })
-            },
-            deep: true
-        },
-        search: {
-            handler() {
-                this.getDataFromApi().then(data => {
-                    this.desserts = data.items
-                    this.totalDesserts = data.total
-                })
-            },
-            deep: true
+        // pagination: {
+        //     handler() {
+        //         this.getDataFromApi().then(data => {
+        //             this.desserts = data.items
+        //             this.totalDesserts = data.total
+        //         })
+        //     },
+        //     deep: true
+        // },
+        // search: {
+        //     handler() {
+        //         this.getDataFromApi().then(data => {
+        //             this.desserts = data.items
+        //             this.totalDesserts = data.total
+        //         })
+        //     },
+        //     deep: true
+        // },
+        items(val) {
+            // this.totalItems = val.length
+            // console.log(this.pagination)
         },
         dialog(val) { this.localDialog = val },
-        localDialog(val) { this.$emit('handleDialog', val) }
+        localDialog(val) {
+            this.$emit('handleDialog', val)
+            if (!val) this.$store.dispatch('languages/item')
+        }
     },
-    mounted() {
-        var a = this.$store.dispatch('languages/select')
-        console.log(this.$store.state.languages.items)
-        // this.getDataFromApi().then(data => {
-        //     this.desserts = data.items
-        //     this.totalDesserts = data.total
-        // })
+    created() {
+        // this.$store.dispatch('languages/init')
+        this.$store.dispatch('languages/select')
+        //{
+        //     descending: this.pagination.descending,
+        //     page: this.pagination.page,
+        //     rowsPerPage: this.pagination.rowsPerPage,
+        //     sortBy: this.pagination.sortBy,
+        //     totalItems: this.pagination.totalItems
+        // }
     },
     methods: {
-        getDataFromApi() {
-            this.loading = true
-            return new Promise((resolve, reject) => {
-                const { sortBy, descending, page, rowsPerPage } = this.pagination
-                let items = this.getDesserts()
-                const total = items.length
-                // Filter key
-                let filterKey = this.search
-                if (filterKey) {
-                    items = items.filter(function (row) {
-                        return Object.keys(row).some(function (key) {
-                            return String(row[key]).toLowerCase().indexOf(filterKey) > -1
-                        })
-                    })
-                }
-                if (this.pagination.sortBy) {
-                    items = items.sort((a, b) => {
-                        const sortA = a[sortBy]
-                        const sortB = b[sortBy]
-                        if (descending) {
-                            if (sortA < sortB) return 1
-                            if (sortA > sortB) return -1
-                            return 0
-                        } else {
-                            if (sortA < sortB) return -1
-                            if (sortA > sortB) return 1
-                            return 0
-                        }
-                    })
-                }
-                if (rowsPerPage > 0) {
-                    items = items.slice((page - 1) * rowsPerPage, page * rowsPerPage)
-                }
-                setTimeout(() => {
-                    this.loading = false
-                    resolve({
-                        items,
-                        total
-                    })
-                }, 1000)
-            })
+        handleEdit(item) {
+            this.$store.dispatch('languages/item', item)
+            this.localDialog = true
         },
-        editItem(item) {
-            this.editedIndex = this.desserts.indexOf(item)
-            this.editedItem = Object.assign({}, item)
-            this.dialog = true
+        handleDelete(item) {
+            this.confirmDialog = true
+            this.$store.dispatch('languages/item', item)
+            console.log(this.$store.state.languages.item)
+            // const index = this.desserts.indexOf(item)
+            // confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
         },
-        deleteItem(item) {
-            const index = this.desserts.indexOf(item)
-            confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
-        },
-        close() {
-            this.dialog = false
-            setTimeout(() => {
-                this.editedItem = Object.assign({}, this.defaultItem)
-                this.editedIndex = -1
-            }, 300)
-        },
-        save() {
-            if (this.editedIndex > -1) {
-                Object.assign(this.desserts[this.editedIndex], this.editedItem)
-            } else {
-                this.desserts.push(this.editedItem)
-            }
-            this.close()
-        },
-        getDesserts() {
-            return [
-                {
-                    value: false,
-                    name: 'Frozen Yogurt',
-                    calories: 159,
-                    fat: 6.0,
-                    carbs: 24,
-                    protein: 4.0,
-                    iron: '1%'
-                },
-                {
-                    value: false,
-                    name: 'Ice cream sandwich',
-                    calories: 237,
-                    fat: 9.0,
-                    carbs: 37,
-                    protein: 4.3,
-                    iron: '1%'
-                },
-                {
-                    value: false,
-                    name: 'Eclair',
-                    calories: 262,
-                    fat: 16.0,
-                    carbs: 23,
-                    protein: 6.0,
-                    iron: '7%'
-                },
-                {
-                    value: false,
-                    name: 'Cupcake',
-                    calories: 305,
-                    fat: 3.7,
-                    carbs: 67,
-                    protein: 4.3,
-                    iron: '8%'
-                },
-                {
-                    value: false,
-                    name: 'Gingerbread',
-                    calories: 356,
-                    fat: 16.0,
-                    carbs: 49,
-                    protein: 3.9,
-                    iron: '16%'
-                },
-                {
-                    value: false,
-                    name: 'Jelly bean',
-                    calories: 375,
-                    fat: 0.0,
-                    carbs: 94,
-                    protein: 0.0,
-                    iron: '0%'
-                },
-                {
-                    value: false,
-                    name: 'Lollipop',
-                    calories: 392,
-                    fat: 0.2,
-                    carbs: 98,
-                    protein: 0,
-                    iron: '2%'
-                },
-                {
-                    value: false,
-                    name: 'Honeycomb',
-                    calories: 408,
-                    fat: 3.2,
-                    carbs: 87,
-                    protein: 6.5,
-                    iron: '45%'
-                },
-                {
-                    value: false,
-                    name: 'Donut',
-                    calories: 452,
-                    fat: 25.0,
-                    carbs: 51,
-                    protein: 4.9,
-                    iron: '22%'
-                },
-                {
-                    value: false,
-                    name: 'KitKat',
-                    calories: 518,
-                    fat: 26.0,
-                    carbs: 65,
-                    protein: 7,
-                    iron: '6%'
-                }
-            ]
+        handleConfirm() {
+            this.confirmDialog = false
+            this.$store.dispatch('languages/delete')
         }
     }
 }

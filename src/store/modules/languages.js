@@ -1,10 +1,13 @@
-import { SET_CATCH, SET_ITEMS, SET_ITEM, PUSH_ITEMS } from '../mutation-type'
-import { FBStore, timestamp } from '@/plugins/firebaseInit'
+import { SET_CATCH, SET_ITEMS, SET_ITEM, PUSH_ITEMS, UPDATE_ITEMS, SET_MESSAGE } from '../mutation-type'
+import { FBStore, timestamp, docChanges } from '@/plugins/firebaseInit'
 export default {
   namespaced: true,
   state: {
     items: [],
     item: {},
+    query: {
+      search: ''
+    },
     default: {
       name: '',
       icon: '<i class="material-icons">outlined_flag</i>',
@@ -18,6 +21,15 @@ export default {
   },
   getters: {
     getAll(state) {
+      return FBStore.collection("languages").get().then(qss => {
+        qss.forEach(doc => {
+          var item = doc.data()
+          item.id = doc.id
+          state.items.push(item)
+        })
+      })
+    },
+    getAllId(state) {
       return state.items
     },
     getById: state => id => {
@@ -25,47 +37,97 @@ export default {
     },
     getByFlag: state => flag => {
       return state.items.filter(x => x.flag === flag)
-    }
+    },
+    getFilter: state => query => {
+      var items = state.items
+      if (query.search) {
+        items = items.filter(function(row) {
+          return Object.keys(row).some(function(key) {
+            return String(row[key]).toLowerCase().indexOf(query.search) > -1
+          })
+        })
+      }
+      return items
+    },
   },
   mutations: {
     [SET_ITEMS](state, items) {
       state.items = items
     },
     [SET_ITEM](state, item) {
-      state.item = item
+      state.item = Object.assign({}, item)
     },
     [PUSH_ITEMS](state, item) {
       state.items.push(item)
+    },
+    [UPDATE_ITEMS](state, item) {
+      const index = state.items.findIndex(x => x.id === item.id)
+      state.items.splice(index, 1, state.item)
     }
   },
   actions: {
-    select({ commit, state }) {
+    init({ state }) {
       state.items = []
+      docChanges({
+        data: state.items,
+        collections: FBStore.collection("languages").orderBy("created.at", "desc")
+        // .startAfter((page - 1) * rowsPerPage)
+        // .limit(rowsPerPage)
+      })
+    },
+    select({ commit, state }) {
       return FBStore.collection("languages").get().then(function(querySnapshot) {
+        var items = []
         querySnapshot.forEach(function(doc) {
           // doc.data() is never undefined for query doc snapshots
           // console.log(doc.id, " => ", doc.data())
-          var items = state.default
-          items = doc.data()
-          items.id = doc.id
-          if (items.created.at) items.created.at = items.created.at.toDate()
-          if (items.updated.at) items.updated.at = items.updated.at.toDate()
-          if (items.deleted.at) items.deleted.at = items.deleted.at.toDate()
-          commit(PUSH_ITEMS, items)
+          var item = state.default
+          item = doc.data()
+          item.id = doc.id
+          items.push(item)
         })
+        commit(SET_ITEMS, items)
       }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
     },
     insert({ commit, state }) {
-      state.item.created = { by: 'Admin', at: timestamp }
       // state.item.created = { by: 'Admin', at: new Date() }
+      // state.items.push(state.item)
+      state.item.created = { by: 'Admin', at: timestamp }
       FBStore.collection("languages")
-        .add(state.item).then((item) => {
-          commit(PUSH_ITEMS, item)
+        .add(state.item)
+        .then(docRef => {
+          commit(PUSH_ITEMS, Object.assign({ id: docRef.id }, state.item))
           commit(SET_ITEM, state.default)
-        }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
+          commit(SET_MESSAGE, { text: 'Cập nhật thành công', color: 'success' }, { root: true })
+        })
+        .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
-    selected({ commit, state }) {
-      commit(SET_ITEM, state.default)
+    update({ commit, state }) {
+      FBStore.collection("languages").doc(state.item.id)
+        .set(state.item)
+        .then(docRef => {
+          commit(UPDATE_ITEMS, state.item)
+          commit(SET_MESSAGE, { text: 'Cập nhật thành công', color: 'success' }, { root: true })
+        })
+        .catch(error => { commit(SET_CATCH, error, { root: true }) })
+    },
+    delete({ commit, state }) {
+      FBStore.collection("languages").doc(state.item.id)
+        .update({ flag: state.item.flag === 1 ? 0 : 1 })
+        .then(docRef => {
+          state.item.flag = state.item.flag === 1 ? 0 : 1
+          commit(UPDATE_ITEMS, state.item)
+          commit(SET_ITEM, state.default)
+          commit(SET_MESSAGE, { text: 'Cập nhật thành công', color: 'success' }, { root: true })
+        })
+        .catch(error => { commit(SET_CATCH, error, { root: true }) })
+    },
+    remove({ commit, state }) {
+
+    },
+    item({ commit, state }, item) {
+      if (item) commit(SET_ITEM, item)
+      else commit(SET_ITEM, state.default)
     }
   }
 }
