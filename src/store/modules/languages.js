@@ -8,6 +8,7 @@ export default {
     query: {
       search: ''
     },
+    cll: FBStore.collection('languages'),
     default: {
       name: '',
       icon: '<i class="material-icons">outlined_flag</i>',
@@ -21,7 +22,7 @@ export default {
   },
   getters: {
     getAll(state) {
-      return FBStore.collection("languages").get().then(qss => {
+      return FBStore.collection('languages').get().then(qss => {
         qss.forEach(doc => {
           var item = doc.data()
           item.id = doc.id
@@ -48,7 +49,7 @@ export default {
         })
       }
       return items
-    },
+    }
   },
   mutations: {
     [SET_ITEMS](state, items) {
@@ -70,30 +71,87 @@ export default {
       state.items = []
       docChanges({
         data: state.items,
-        collections: FBStore.collection("languages").orderBy("created.at", "desc")
+        collections: FBStore.collection('languages').orderBy('created.at', 'desc')
         // .startAfter((page - 1) * rowsPerPage)
         // .limit(rowsPerPage)
       })
     },
+    // select({ commit, state }) {
+    //   return FBStore.collection('languages').get().then(function(querySnapshot) {
+    //     var items = []
+    //     querySnapshot.forEach(function(doc) {
+    //       // doc.data() is never undefined for query doc snapshots
+    //       // console.log(doc.id, ' => ', doc.data())
+    //       var item = state.default
+    //       item = doc.data()
+    //       item.id = doc.id
+    //       items.push(item)
+    //     })
+    //     commit(SET_ITEMS, items)
+    //   }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
+    // },
+    pagination({ commit, state }, query) {
+      var items = []
+      if (query.pagination.rowsPerPage) {
+        state.cll.orderBy('name', 'asc').limit(5).get().then(query => {
+          query.forEach(function(doc) {
+            var item = state.default
+            item = doc.data()
+            item.id = doc.id
+            items.push(item)
+          })
+        })
+      }
+      commit(SET_ITEMS, items)
+    },
     select({ commit, state }) {
-      return FBStore.collection("languages").get().then(function(querySnapshot) {
+      var first = FBStore.collection('languages').orderBy('name', 'asc')
+      var x = first.get().then(query => {
         var items = []
-        querySnapshot.forEach(function(doc) {
+        query.forEach(function(doc) {
           // doc.data() is never undefined for query doc snapshots
-          // console.log(doc.id, " => ", doc.data())
+          // console.log(doc.id, ' => ', doc.data())
           var item = state.default
           item = doc.data()
           item.id = doc.id
           items.push(item)
         })
+        console.log(items);
         commit(SET_ITEMS, items)
-      }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
+      })
+      // first.get().then(querySnapshot => {
+      //   // Get the last visible document
+      //   var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1]
+      //   // console.log('last', lastVisible);
+      //   // Construct a new query starting at this document,
+      //   // get the next 5 cities.
+      //   var next = FBStore.collection('languages')
+      //     .orderBy('name', 'asc')
+      //     .startAfter(lastVisible)
+      //     .limit(5)
+      //   // console.log(next)
+      //   next.get().then(query => {
+      //     var items = []
+      //     query.forEach(function(doc) {
+      //       // doc.data() is never undefined for query doc snapshots
+      //       // console.log(doc.id, ' => ', doc.data())
+      //       var item = state.default
+      //       item = doc.data()
+      //       item.id = doc.id
+      //       items.push(item)
+      //     })
+      //     console.log(items);
+      //     commit(SET_ITEMS, items)
+      //   })
+      // }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
     },
     insert({ commit, state }) {
       // state.item.created = { by: 'Admin', at: new Date() }
       // state.items.push(state.item)
+      // for (let index = 0; index < 1000; index++) {
       state.item.created = { by: 'Admin', at: timestamp }
-      FBStore.collection("languages")
+      // state.item.name = 'lang ' + index
+      FBStore.collection('languages')
         .add(state.item)
         .then(docRef => {
           commit(PUSH_ITEMS, Object.assign({ id: docRef.id }, state.item))
@@ -101,9 +159,10 @@ export default {
           commit(SET_MESSAGE, { text: 'Cập nhật thành công', color: 'success' }, { root: true })
         })
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
+      // }
     },
     update({ commit, state }) {
-      FBStore.collection("languages").doc(state.item.id)
+      FBStore.collection('languages').doc(state.item.id)
         .set(state.item)
         .then(docRef => {
           commit(UPDATE_ITEMS, state.item)
@@ -112,7 +171,7 @@ export default {
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     delete({ commit, state }) {
-      FBStore.collection("languages").doc(state.item.id)
+      FBStore.collection('languages').doc(state.item.id)
         .update({ flag: state.item.flag === 1 ? 0 : 1 })
         .then(docRef => {
           state.item.flag = state.item.flag === 1 ? 0 : 1

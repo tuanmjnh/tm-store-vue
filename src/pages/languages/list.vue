@@ -1,8 +1,12 @@
 <template>
   <div>
+    <div v-for="(item, i) in items" :key="i">
+      <p>{{item.name}}}</p>
+    </div>
+    <br/>
     <v-card>
       <v-card-title>
-        <v-text-field v-model="search" append-icon="search" label="Search" single-line hide-details></v-text-field>
+        <v-text-field v-model="query.search" append-icon="search" label="Search" single-line hide-details></v-text-field>
         <v-spacer></v-spacer>
         <v-tooltip right>
           <v-btn slot="activator" color="primary" small fab flat @click="localDialog=!localDialog">
@@ -12,7 +16,8 @@
         </v-tooltip>
       </v-card-title>
       <v-data-table class="elevation-1" v-model="selected" select-all item-key="name" :headers="headers"
-        :items="fiter" :pagination.sync="pagination" :rows-per-page-items="rowPerPage" :total-items="totalItems">
+        :items="fiter" :pagination.sync="query.pagination" :rows-per-page-items="rowPerPage"
+        :total-items="totalItems">
         <!--:loading="loading" :pagination.sync="pagination" :total-items="totalItems" -->
         <template slot="items" slot-scope="props">
           <tr>
@@ -61,99 +66,116 @@
 <script>
 import { FBStore, timestamp } from '@/plugins/firebaseInit'
 export default {
-    props: { dialog: { type: Boolean, default: false } },
-    data: () => ({
-        localDialog: false,
-        confirmDialog: false,
-        loading: true,
-        selected: [],
-        totalItems: 0,
-        search: '',
-        pagination: {},
-        rowPerPage: [5, 10, 25, 50, 100, { text: "All", value: -1 }],
-        headers: [
-            { text: 'Name', value: 'name', align: 'left' },
-            { text: 'Orders', value: 'orders' },
-            { text: 'Created', value: 'created.at' },
-            { text: 'Flag', value: 'flag' },
-            { text: '#', value: '#', sortable: false }
-        ],
-        editedIndex: -1
-    }),
-    computed: {
-        formTitle() {
-            return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
-        },
-        fiter() {
-            var query = {
-                search: this.search,
-                page: this.pagination.page,
-                descending: this.pagination.descending,
-                rowsPerPage: this.pagination.rowsPerPage,
-                sortBy: this.pagination.sortBy,
-                totalItems: this.pagination.totalItems,
-            }
-            var rs = this.$store.getters['languages/getFilter'](query)
-            return rs
-        }
+  props: { dialog: { type: Boolean, default: false } },
+  data: () => ({
+    localDialog: false,
+    confirmDialog: false,
+    loading: true,
+    selected: [],
+    totalItems: 0,
+    items: [],
+    // search: '',
+    // pagination: {},
+    rowPerPage: [5, 10, 25, 50, 100, { text: "All", value: -1 }],
+    headers: [
+      { text: 'Name', value: 'name', align: 'left' },
+      { text: 'Orders', value: 'orders' },
+      { text: 'Created', value: 'created.at' },
+      { text: 'Flag', value: 'flag' },
+      { text: '#', value: '#', sortable: false }
+    ],
+    query: {
+      search: '',
+      pagination: {}
     },
-    watch: {
-        // pagination: {
-        //     handler() {
-        //         this.getDataFromApi().then(data => {
-        //             this.desserts = data.items
-        //             this.totalDesserts = data.total
-        //         })
-        //     },
-        //     deep: true
-        // },
-        // search: {
-        //     handler() {
-        //         this.getDataFromApi().then(data => {
-        //             this.desserts = data.items
-        //             this.totalDesserts = data.total
-        //         })
-        //     },
-        //     deep: true
-        // },
-        items(val) {
-            // this.totalItems = val.length
-            // console.log(this.pagination)
-        },
-        dialog(val) { this.localDialog = val },
-        localDialog(val) {
-            this.$emit('handleDialog', val)
-            if (!val) this.$store.dispatch('languages/item')
-        }
+    editedIndex: -1
+  }),
+  computed: {
+    formTitle() {
+      return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
     },
-    created() {
-        // this.$store.dispatch('languages/init')
-        this.$store.dispatch('languages/select')
-        //{
-        //     descending: this.pagination.descending,
-        //     page: this.pagination.page,
-        //     rowsPerPage: this.pagination.rowsPerPage,
-        //     sortBy: this.pagination.sortBy,
-        //     totalItems: this.pagination.totalItems
-        // }
+    fiter() {
+      // var query = {
+      //   search: this.search,
+      //   page: this.pagination.page,
+      //   descending: this.pagination.descending,
+      //   rowsPerPage: this.pagination.rowsPerPage,
+      //   sortBy: this.pagination.sortBy,
+      //   totalItems: this.pagination.totalItems,
+      // }
+      // var rs = this.$store.getters['languages/getFilter'](query)
+      var rs = this.$store.state.languages.items
+      return rs
     },
-    methods: {
-        handleEdit(item) {
-            this.$store.dispatch('languages/item', item)
-            this.localDialog = true
-        },
-        handleDelete(item) {
-            this.confirmDialog = true
-            this.$store.dispatch('languages/item', item)
-            console.log(this.$store.state.languages.item)
-            // const index = this.desserts.indexOf(item)
-            // confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
-        },
-        handleConfirm() {
-            this.confirmDialog = false
-            this.$store.dispatch('languages/delete')
-        }
+    getData() {
+      var rs = this.$store.getters['languages/pagination'](this.query)
+      console.log(rs)
+      return rs
     }
+  },
+  watch: {
+    query: {
+      handler() {
+        this.items = this.$store.dispatch('languages/pagination', this.query)
+      },
+      deep: true
+    },
+    // pagination: {
+    //     handler() {
+    //         this.getDataFromApi().then(data => {
+    //             this.desserts = data.items
+    //             this.totalDesserts = data.total
+    //         })
+    //     },
+    //     deep: true
+    // },
+    // search: {
+    //     handler() {
+    //         this.getDataFromApi().then(data => {
+    //             this.desserts = data.items
+    //             this.totalDesserts = data.total
+    //         })
+    //     },
+    //     deep: true
+    // },
+    items(val) {
+      // this.totalItems = val.length
+      // console.log(this.pagination)
+    },
+    dialog(val) { this.localDialog = val },
+    localDialog(val) {
+      this.$emit('handleDialog', val)
+      if (!val) this.$store.dispatch('languages/item')
+    }
+  },
+  created() {
+    // this.$store.dispatch('languages/init')
+    // this.$store.dispatch('languages/select')
+    //{
+    //     descending: this.pagination.descending,
+    //     page: this.pagination.page,
+    //     rowsPerPage: this.pagination.rowsPerPage,
+    //     sortBy: this.pagination.sortBy,
+    //     totalItems: this.pagination.totalItems
+    // }
+  },
+  methods: {
+    handleEdit(item) {
+      this.$store.dispatch('languages/item', item)
+      this.localDialog = true
+    },
+    handleDelete(item) {
+      this.confirmDialog = true
+      this.$store.dispatch('languages/item', item)
+      console.log(this.$store.state.languages.item)
+      // const index = this.desserts.indexOf(item)
+      // confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
+    },
+    handleConfirm() {
+      this.confirmDialog = false
+      this.$store.dispatch('languages/delete')
+    }
+  }
 }
 </script>
 
