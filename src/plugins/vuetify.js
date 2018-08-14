@@ -6,6 +6,7 @@ import {
   VFooter,
   VList,
   VBtn,
+  VBtnToggle,
   VIcon,
   VGrid,
   VToolbar,
@@ -34,6 +35,7 @@ Vue.use(Vuetify, {
     VFooter,
     VList,
     VBtn,
+    VBtnToggle,
     VIcon,
     VGrid,
     VToolbar,
@@ -58,9 +60,9 @@ Vue.use(Vuetify, {
     primary: '#1976D2',
     secondary: '#424242',
     accent: '#82B1FF',
-    error: '#FF5252',
+    error: '#dc3545',
     info: '#2196F3',
-    success: '#4CAF50',
+    success: '#28a745',
     warning: '#FFC107'
   },
 })

@@ -3,7 +3,7 @@
     <!-- <v-btn slot="activator" color="primary" dark class="mb-2">New Item</v-btn> -->
     <v-card>
       <v-card-title>
-        <span class="headline">{{ formTitle }}</span>
+        <span class="headline">Update languages items</span>
       </v-card-title>
       <v-card-text>
         <v-container grid-list-md>
@@ -86,7 +86,10 @@ export default {
       if (this.item.id) this.$store.dispatch('languages/update')
       else this.$store.dispatch('languages/insert')
     }
-  }
+  },
+  created() {
+    
+  },
 }
 </script>
 

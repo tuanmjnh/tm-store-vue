@@ -9,6 +9,9 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "firebase": "^5.3.0",
+    "firebase-admin": "^6.0.0",
+    "firebase-functions": "^2.0.4",
     "vue": "^2.5.16",
     "vuetify": "^1.0.19"
   },
@@ -19,7 +22,6 @@
     "@vue/cli-service": "^3.0.0-rc.10",
     "axios": "^0.18.0",
     "babel-plugin-transform-imports": "^1.4.1",
-    "firebase": "^5.3.0",
     "font-awesome": "^4.7.0",
     "jquery": "^3.3.1",
     "moment": "^2.22.2",
@@ -64,6 +66,12 @@
     "plugins": {
       "autoprefixer": {}
     }
+  },
+  "node": {
+    "console": "empty",
+    "fs": "empty",
+    "net": "empty",
+    "tls": "empty"
   },
   "browserslist": [
     "> 1%",

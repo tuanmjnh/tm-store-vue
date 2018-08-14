@@ -1,5 +1,5 @@
-import { SET_CATCH, SET_ITEMS, SET_ITEM, PUSH_ITEMS } from '../mutation-type'
-import { FBStore, FBAuth } from '@/plugins/firebaseInit'
+import { SET_CATCH, SET_ITEMS, PUSH_ITEMS, UPDATE_ITEMS, REMOVE_ITEMS, SET_ITEM, SET_MESSAGE } from '../mutation-type'
+import { FBStore, timestamp, docChanges } from '@/plugins/firebaseInit'
 export default {
   namespaced: true,
   state: {
@@ -19,89 +19,127 @@ export default {
   },
   getters: {
     getAll(state) {
-      return state.data
+      return FBStore.collection('users').get().then(qss => {
+        qss.forEach(doc => {
+          var item = doc.data()
+          item.id = doc.id
+          state.items.push(item)
+        })
+      })
+    },
+    getAllId(state) {
+      return state.items
     },
     getById: state => id => {
-      return state.data.find(data => data.uid === id)
+      return state.items.find(x => x.id === id)
     },
-    getByStatus: state => status => {
-      return state.data.filter(data => data.status === status)
+    getByFlag: state => flag => {
+      return state.items.filter(x => x.flag === flag)
+    },
+    getFilter: state => query => {
+      var items = state.items
+      if (query.flag >= 0) {
+        items = items.filter(function(row) {
+          return row['flag'] == query.flag
+        })
+      }
+      if (query.search) {
+        items = items.filter(function(row) {
+          return Object.keys(row).some(function(key) {
+            return String(row[key]).toLowerCase().indexOf(query.search) > -1
+          })
+        })
+      }
+      return items
     }
   },
   mutations: {
-    [SET_ITEMS](state, data) {
-      state.data = data
+    [SET_ITEMS](state, items) {
+      state.items = items
     },
-    [SET_ITEM](state, selected) {
-      state.selected = selected
+    [SET_ITEM](state, item) {
+      state.item = Object.assign({}, item)
     },
     [PUSH_ITEMS](state, item) {
-      state.data.push(item)
+      state.items.push(item)
+    },
+    [UPDATE_ITEMS](state, item) {
+      const index = state.items.findIndex(x => x.id === item.id)
+      state.items.splice(index, 1, item)
+    },
+    [REMOVE_ITEMS](state, item) {
+      const index = state.items.findIndex(x => x.id === item.id)
+      if (index >= 0) state.items.splice(index, 1)
     }
   },
   actions: {
-    select({ commit, state }) {
-      return FBStore.collection("users").get().then(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-          // doc.data() is never undefined for query doc snapshots
-          // console.log(doc.id, " => ", doc.data())
-          var items = state.default
-          items = doc.data()
-          items.id = doc.id
-          commit(SET_ITEMS, items)
-        })
-      }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
+    init(context) {
+      docChanges({
+        context: context,
+        collections: FBStore.collection('users').orderBy('created_at', 'desc')
+      })
     },
-    insert({ commit, state }) {
-      state.item.created = { by: 'Admin', at: new Date() }
-      FBStore.collection("users")
-        .add(state.item).then((item) => { commit(PUSH_ITEMS, item) })
-        .catch(function(error) { commit(SET_CATCH, error, { root: true }) })
+    select({ commit, state }) {
+      var first = FBStore.collection('users').orderBy('created_at', 'asc')
+      var x = first.get().then(query => {
+        var items = []
+        query.forEach(function(doc) {
+          var item = state.default
+          item = doc.data()
+          item.id = doc.id
+          items.push(item)
+        })
+        commit(SET_ITEMS, items)
+      })
+    },
+    async insert({ commit, state }) {
+      var item = Object.assign({}, state.item)
+      item.created_by = 'Admin'
+      item.created_at = timestamp
+      return FBStore.collection('users')
+        .add(state.item)
+        .then(docRef => {
+          item.id = docRef.id
+          commit(PUSH_ITEMS, item)
+          commit(SET_MESSAGE, { text: 'Cập nhật thành công', color: 'success' }, { root: true })
+        })
+        .then(() => { commit(SET_ITEM, state.default) })
+        .catch(error => { commit(SET_CATCH, error, { root: true }) })
+    },
+    update({ commit, state }) {
+      var item = Object.assign({}, state.item)
+      FBStore.collection('users').doc(item.id).set(item)
+        .then(docRef => {
+          commit(UPDATE_ITEMS, item)
+          commit(SET_MESSAGE, { text: 'Cập nhật thành công', color: 'success' }, { root: true })
+        })
+        .catch(error => { commit(SET_CATCH, error, { root: true }) })
+    },
+    delete({ commit, state }) {
+      var item = Object.assign({}, state.item)
+      FBStore.collection('users').doc(item.id)
+        .update({ flag: item.flag === 1 ? 0 : 1 })
+        .then(docRef => {
+          item.flag = item.flag === 1 ? 0 : 1
+          commit(UPDATE_ITEMS, item)
+          commit(SET_MESSAGE, { text: 'Xóa bản ghi thành công!', color: 'success' }, { root: true })
+        })
+        .then(() => { commit(SET_ITEM, state.default) })
+        .catch(error => { commit(SET_CATCH, error, { root: true }) })
+    },
+    remove({ commit, state }) {
+      var item = Object.assign({}, state.item)
+      FBStore.collection('users').doc(item.id).delete()
+        .then(docRef => {
+          commit(REMOVE_ITEMS, item)
+          commit(SET_MESSAGE, { text: 'Xóa hoàn toàn bản ghi thành công!', color: 'success' }, { root: true })
+        })
+        .then(() => { commit(SET_ITEM, state.default) })
+        .catch(error => { commit(SET_CATCH, error, { root: true }) })
+    },
+    item({ commit, state }, item) {
+      if (item) commit(SET_ITEM, item)
+      else commit(SET_ITEM, state.default)
     }
-    // async insert({ commit, state }, data) {
-    //   await axios.mle
-    //     .post(controller, data)
-    //     .then(function(res) {
-    //       if (res.status === 200) {
-    //         commit(types.PUSH_DATA, res.data.data)
-    //         commit(types.SET_SELECTED, state.default)
-    //       }
-    //       commit(types.SET_MESSAGE, res, { root: true })
-    //     })
-    //     .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
-    // },
-    // async update({ commit }, data) {
-    //   await axios.mle
-    //     .put(controller + data.uid, data)
-    //     .then(function(res) {
-    //       if (res.status === 200) data.data = res.data
-    //       commit(types.SET_MESSAGE, res, { root: true })
-    //     })
-    //     .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
-    // },
-    // async delete({ commit, state }, data) {
-    //   var _data = []
-    //   data.forEach(i => { _data.push({ uid: i.selected.uid, status: i.status }) })
-    //   await axios.mle
-    //     .put(controller + this.state._action.delete, data)
-    //     .then(function(res) {
-    //       if (res.status === 200) {
-    //         data.forEach(i => { i.selected.status = i.status })
-    //         commit(types.SET_SELECTED, state.default)
-    //       }
-    //       commit(types.SET_MESSAGE, res, { root: true })
-    //     })
-    //     .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
-    // },
-    // async selected({ commit, state }, data) {
-    //   if (data) commit(types.SET_SELECTED, data)
-    //   else commit(types.SET_SELECTED, state.default)
-    // },
-    // async updateq({ commit }, data) {
-    //   await axios.mle
-    //     .put(controller + this.state._action.quick_edit, data)
-    //     .then(function(res) { commit(types.SET_MESSAGE, res, { root: true }) })
-    //     .catch(function(error) { commit(types.AXIOS_CATCH, error, { root: true }) })
-    // }
   }
 }

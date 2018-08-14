@@ -26,34 +26,40 @@ FBStore.settings(settings)
 // export const FBMessaging = firebase.messaging()
 // export const FBFuntions = firebase.functions()
 // Functions
-export function docChanges({ collections, data, resolve, reject }) {
+export function docChanges({ context, collections, resolve, reject }) {
+  var item = {}
   collections.onSnapshot(snapshot => {
     snapshot.docChanges().forEach(change => {
       const source = change.doc.metadata.hasPendingWrites ? 'Local' : 'Server'
+      item = Object.assign({ id: change.doc.id }, change.doc.data())
       if (change.type === "added") {
-        // if (source === 'Server') {
-          data.push(Object.assign({ id: change.doc.id }, change.doc.data()))
-        // }
+        if (source === 'Server') {
+          context.commit('PUSH_ITEMS', item)
+          // data.push(item)
+        }
         console.log("Added: ", change.doc.data())
       }
       if (change.type === "modified") {
-        if (change.oldIndex !== change.newIndex) {
-          data.splice(change.oldIndex, 1)
-          data.splice(change.newIndex, 0, Object.assign({ id: change.doc.id }, change.doc.data()))
-        } else data.splice(change.oldIndex, 1, Object.assign({ id: change.doc.id }, change.doc.data()))
-        console.log("old ", change.oldIndex)
-        console.log("new ", change.newIndex)
-        // console.log("Modified: ", change.doc.data())
+        if (source === 'Server') {
+          context.commit('UPDATE_ITEMS', item)
+        }
+        // if (change.oldIndex !== change.newIndex) {
+        //   data.splice(change.oldIndex, 1)
+        //   data.splice(change.newIndex, 0, item)
+        // } else data.splice(change.oldIndex, 1, item)
+        // console.log("old ", change.oldIndex)
+        // console.log("new ", change.newIndex)
+        console.log("Modified: ", change.doc.data())
       }
       if (change.type === "removed") {
-        data.splice(change.oldIndex, 1)
+        context.commit('REMOVE_ITEMS', item)
         console.log("Removed: ", change.doc.data())
       }
       console.log(source)
     }, (error) => {
       if (typeof reject === 'function') reject(error)
     })
-    if (typeof resolve === 'function') resolve(data)
+    if (typeof resolve === 'function') resolve(item)
   }, (error) => {
     if (typeof reject === 'function') reject(error)
   })

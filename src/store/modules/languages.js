@@ -1,22 +1,23 @@
-import { SET_CATCH, SET_ITEMS, SET_ITEM, PUSH_ITEMS, UPDATE_ITEMS, SET_MESSAGE } from '../mutation-type'
+import { SET_CATCH, SET_ITEMS, PUSH_ITEMS, UPDATE_ITEMS, REMOVE_ITEMS, SET_ITEM, SET_MESSAGE } from '../mutation-type'
 import { FBStore, timestamp, docChanges } from '@/plugins/firebaseInit'
 export default {
   namespaced: true,
   state: {
     items: [],
     item: {},
-    query: {
-      search: ''
-    },
     cll: FBStore.collection('languages'),
     default: {
       name: '',
+      code: '',
       icon: '<i class="material-icons">outlined_flag</i>',
       desc: '',
       orders: 1,
-      created: { by: '', at: new Date() },
-      updated: { by: '', at: null },
-      deleted: { by: '', at: null },
+      created_by: '',
+      created_at: new Date(),
+      updated_by: '',
+      updated_at: null,
+      deleted_by: '',
+      deleted_at: null,
       flag: 1
     }
   },
@@ -41,6 +42,11 @@ export default {
     },
     getFilter: state => query => {
       var items = state.items
+      if (query.flag >= 0) {
+        items = items.filter(function(row) {
+          return row['flag'] == query.flag
+        })
+      }
       if (query.search) {
         items = items.filter(function(row) {
           return Object.keys(row).some(function(key) {
@@ -63,15 +69,19 @@ export default {
     },
     [UPDATE_ITEMS](state, item) {
       const index = state.items.findIndex(x => x.id === item.id)
-      state.items.splice(index, 1, state.item)
+      state.items.splice(index, 1, item)
+    },
+    [REMOVE_ITEMS](state, item) {
+      const index = state.items.findIndex(x => x.id === item.id)
+      if (index >= 0) state.items.splice(index, 1)
     }
   },
   actions: {
-    init({ state }) {
-      state.items = []
+    init(context) {
+      // state.items = []
       docChanges({
-        data: state.items,
-        collections: FBStore.collection('languages').orderBy('created.at', 'desc')
+        context: context,
+        collections: FBStore.collection('languages').orderBy('created_at', 'desc')
         // .startAfter((page - 1) * rowsPerPage)
         // .limit(rowsPerPage)
       })
@@ -90,10 +100,33 @@ export default {
     //     commit(SET_ITEMS, items)
     //   }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
     // },
-    pagination({ commit, state }, query) {
+    pagination({ commit, state }, { search, pagination }) {
       var items = []
-      if (query.pagination.rowsPerPage) {
-        state.cll.orderBy('name', 'asc').limit(5).get().then(query => {
+      var obj = {
+        search: [],
+        orderBy: [],
+        limit: 5
+      }
+      if (search) {
+        obj.search.push('name', '>=', search)
+        obj.search.push('name', '<=', search)
+        // cll = cll.where('name', '==', 'lang 0')
+      }
+      if (pagination.sortBy) {
+        obj.orderBy.push('name', pagination.descending ? 'desc' : 'asc')
+        // cll = cll.orderBy('name', pagination.descending ? 'desc' : 'asc')
+      }
+      if (pagination.rowsPerPage) {
+        obj.limit = 5
+        // cll = cll.limit(5)
+      }
+      console.log(obj)
+      if (obj.search.length > 0)
+        state.cll
+        .where(obj.search[0], obj.search[1], obj.search[2])
+        .orderBy(obj.orderBy[0], obj.orderBy[1])
+        .limit(obj.limit)
+        .get().then(query => {
           query.forEach(function(doc) {
             var item = state.default
             item = doc.data()
@@ -101,11 +134,22 @@ export default {
             items.push(item)
           })
         })
-      }
+      else
+        state.cll
+        .orderBy(obj.orderBy[0], obj.orderBy[1])
+        .limit(obj.limit)
+        .get().then(query => {
+          query.forEach(function(doc) {
+            var item = state.default
+            item = doc.data()
+            item.id = doc.id
+            items.push(item)
+          })
+        })
       commit(SET_ITEMS, items)
     },
     select({ commit, state }) {
-      var first = FBStore.collection('languages').orderBy('name', 'asc')
+      var first = FBStore.collection('languages').orderBy('created_at', 'asc')
       var x = first.get().then(query => {
         var items = []
         query.forEach(function(doc) {
@@ -116,7 +160,6 @@ export default {
           item.id = doc.id
           items.push(item)
         })
-        console.log(items);
         commit(SET_ITEMS, items)
       })
       // first.get().then(querySnapshot => {
@@ -145,44 +188,55 @@ export default {
       //   })
       // }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
     },
-    insert({ commit, state }) {
-      // state.item.created = { by: 'Admin', at: new Date() }
-      // state.items.push(state.item)
+    async insert({ commit, state }) {
+      var item = Object.assign({}, state.item)
+      // item.created = { by: 'Admin', at: new Date() }
+      // items.push(state.item)
       // for (let index = 0; index < 1000; index++) {
-      state.item.created = { by: 'Admin', at: timestamp }
-      // state.item.name = 'lang ' + index
-      FBStore.collection('languages')
+      item.created_by = 'Admin'
+      item.created_at = timestamp
+      // item.name = 'lang ' + index
+      return FBStore.collection('languages')
         .add(state.item)
         .then(docRef => {
-          commit(PUSH_ITEMS, Object.assign({ id: docRef.id }, state.item))
-          commit(SET_ITEM, state.default)
+          item.id = docRef.id
+          commit(PUSH_ITEMS, item)
           commit(SET_MESSAGE, { text: 'Cập nhật thành công', color: 'success' }, { root: true })
         })
+        .then(() => { commit(SET_ITEM, state.default) })
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
       // }
     },
     update({ commit, state }) {
-      FBStore.collection('languages').doc(state.item.id)
-        .set(state.item)
+      var item = Object.assign({}, state.item)
+      FBStore.collection('languages').doc(item.id).set(item)
         .then(docRef => {
-          commit(UPDATE_ITEMS, state.item)
+          commit(UPDATE_ITEMS, item)
           commit(SET_MESSAGE, { text: 'Cập nhật thành công', color: 'success' }, { root: true })
         })
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     delete({ commit, state }) {
-      FBStore.collection('languages').doc(state.item.id)
-        .update({ flag: state.item.flag === 1 ? 0 : 1 })
+      var item = Object.assign({}, state.item)
+      FBStore.collection('languages').doc(item.id)
+        .update({ flag: item.flag === 1 ? 0 : 1 })
         .then(docRef => {
-          state.item.flag = state.item.flag === 1 ? 0 : 1
-          commit(UPDATE_ITEMS, state.item)
-          commit(SET_ITEM, state.default)
-          commit(SET_MESSAGE, { text: 'Cập nhật thành công', color: 'success' }, { root: true })
+          item.flag = item.flag === 1 ? 0 : 1
+          commit(UPDATE_ITEMS, item)
+          commit(SET_MESSAGE, { text: 'Xóa bản ghi thành công!', color: 'success' }, { root: true })
         })
+        .then(() => { commit(SET_ITEM, state.default) })
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     remove({ commit, state }) {
-
+      var item = Object.assign({}, state.item)
+      FBStore.collection('languages').doc(item.id).delete()
+        .then(docRef => {
+          commit(REMOVE_ITEMS, item)
+          commit(SET_MESSAGE, { text: 'Xóa hoàn toàn bản ghi thành công!', color: 'success' }, { root: true })
+        })
+        .then(() => { commit(SET_ITEM, state.default) })
+        .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     item({ commit, state }, item) {
       if (item) commit(SET_ITEM, item)
