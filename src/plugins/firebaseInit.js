@@ -37,7 +37,7 @@ export function docChanges({ context, collections, resolve, reject }) {
           context.commit('PUSH_ITEMS', item)
           // data.push(item)
         }
-        console.log("Added: ", change.doc.data())
+        // console.log("Added: ", change.doc.data())
       }
       if (change.type === "modified") {
         if (source === 'Server') {
@@ -49,13 +49,13 @@ export function docChanges({ context, collections, resolve, reject }) {
         // } else data.splice(change.oldIndex, 1, item)
         // console.log("old ", change.oldIndex)
         // console.log("new ", change.newIndex)
-        console.log("Modified: ", change.doc.data())
+        // console.log("Modified: ", change.doc.data())
       }
       if (change.type === "removed") {
         context.commit('REMOVE_ITEMS', item)
-        console.log("Removed: ", change.doc.data())
+        // console.log("Removed: ", change.doc.data())
       }
-      console.log(source)
+      // console.log(source)
     }, (error) => {
       if (typeof reject === 'function') reject(error)
     })

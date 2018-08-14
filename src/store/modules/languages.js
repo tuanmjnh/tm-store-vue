@@ -1,11 +1,12 @@
 import { SET_CATCH, SET_ITEMS, PUSH_ITEMS, UPDATE_ITEMS, REMOVE_ITEMS, SET_ITEM, SET_MESSAGE } from '../mutation-type'
 import { FBStore, timestamp, docChanges } from '@/plugins/firebaseInit'
+const collection = 'languages'
 export default {
   namespaced: true,
   state: {
     items: [],
     item: {},
-    cll: FBStore.collection('languages'),
+    cll: FBStore.collection(collection),
     default: {
       name: '',
       code: '',
@@ -23,7 +24,7 @@ export default {
   },
   getters: {
     getAll(state) {
-      return FBStore.collection('languages').get().then(qss => {
+      return FBStore.collection(collection).get().then(qss => {
         qss.forEach(doc => {
           var item = doc.data()
           item.id = doc.id
@@ -81,13 +82,13 @@ export default {
       // state.items = []
       docChanges({
         context: context,
-        collections: FBStore.collection('languages').orderBy('created_at', 'desc')
+        collections: FBStore.collection(collection).orderBy('created_at', 'desc')
         // .startAfter((page - 1) * rowsPerPage)
         // .limit(rowsPerPage)
       })
     },
     // select({ commit, state }) {
-    //   return FBStore.collection('languages').get().then(function(querySnapshot) {
+    //   return FBStore.collection(collection).get().then(function(querySnapshot) {
     //     var items = []
     //     querySnapshot.forEach(function(doc) {
     //       // doc.data() is never undefined for query doc snapshots
@@ -149,7 +150,7 @@ export default {
       commit(SET_ITEMS, items)
     },
     select({ commit, state }) {
-      var first = FBStore.collection('languages').orderBy('created_at', 'asc')
+      var first = FBStore.collection(collection).orderBy('created_at', 'asc')
       var x = first.get().then(query => {
         var items = []
         query.forEach(function(doc) {
@@ -168,7 +169,7 @@ export default {
       //   // console.log('last', lastVisible);
       //   // Construct a new query starting at this document,
       //   // get the next 5 cities.
-      //   var next = FBStore.collection('languages')
+      //   var next = FBStore.collection(collection)
       //     .orderBy('name', 'asc')
       //     .startAfter(lastVisible)
       //     .limit(5)
@@ -196,7 +197,7 @@ export default {
       item.created_by = 'Admin'
       item.created_at = timestamp
       // item.name = 'lang ' + index
-      return FBStore.collection('languages')
+      return FBStore.collection(collection)
         .add(state.item)
         .then(docRef => {
           item.id = docRef.id
@@ -209,7 +210,9 @@ export default {
     },
     update({ commit, state }) {
       var item = Object.assign({}, state.item)
-      FBStore.collection('languages').doc(item.id).set(item)
+      item.updated_by = 'Admin'
+      item.updated_at = timestamp
+      FBStore.collection(collection).doc(item.id).set(item)
         .then(docRef => {
           commit(UPDATE_ITEMS, item)
           commit(SET_MESSAGE, { text: 'Cập nhật thành công', color: 'success' }, { root: true })
@@ -218,7 +221,9 @@ export default {
     },
     delete({ commit, state }) {
       var item = Object.assign({}, state.item)
-      FBStore.collection('languages').doc(item.id)
+      item.deleted_by = 'Admin'
+      item.deleted_at = timestamp
+      FBStore.collection(collection).doc(item.id)
         .update({ flag: item.flag === 1 ? 0 : 1 })
         .then(docRef => {
           item.flag = item.flag === 1 ? 0 : 1
@@ -230,7 +235,7 @@ export default {
     },
     remove({ commit, state }) {
       var item = Object.assign({}, state.item)
-      FBStore.collection('languages').doc(item.id).delete()
+      FBStore.collection(collection).doc(item.id).delete()
         .then(docRef => {
           commit(REMOVE_ITEMS, item)
           commit(SET_MESSAGE, { text: 'Xóa hoàn toàn bản ghi thành công!', color: 'success' }, { root: true })

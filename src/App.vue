@@ -176,7 +176,9 @@ export default {
       this.$store.dispatch('message', { text: 'Hello, I\'m a snackbar' })
     }
   },
-  created() { }
+  created() {
+    this.$store.dispatch('languages_items/init')
+  }
 }
 </script>
 <style lang="scss">

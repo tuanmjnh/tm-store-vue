@@ -1,17 +1,15 @@
 import { SET_CATCH, SET_ITEMS, PUSH_ITEMS, UPDATE_ITEMS, REMOVE_ITEMS, SET_ITEM, SET_MESSAGE } from '../mutation-type'
 import { FBStore, timestamp, docChanges } from '@/plugins/firebaseInit'
-const collection = collection
+const collection = 'languages_items'
 export default {
   namespaced: true,
   state: {
     items: [],
     item: {},
     default: {
-      username: '',
-      password: '',
-      full_name: '',
-      email: '',
-      image: '',
+      code: '',
+      modules: '',
+      data: [],
       orders: 1,
       created_by: '',
       created_at: new Date(),
