@@ -2,7 +2,7 @@
   <div>
     <v-card>
       <v-card-title>
-        <v-text-field v-model="query.search" append-icon="search" label="Search" single-line hide-details></v-text-field>
+        <v-text-field v-model="pagination.search" append-icon="search" label="Search" single-line hide-details></v-text-field>
         <v-spacer></v-spacer>
         <v-tooltip bottom>
           <v-btn slot="activator" color="primary" small fab flat @click="localDialog=!localDialog">
@@ -12,21 +12,21 @@
         </v-tooltip>
         <v-btn-toggle v-model="toggle_one" mandatory>
           <v-tooltip bottom>
-            <v-btn slot="activator" flat @click="query.flag=1">
+            <v-btn slot="activator" flat @click="pagination.flag=1">
               <i class="material-icons">view_list</i>
             </v-btn>
             <span>List use</span>
           </v-tooltip>
           <v-tooltip bottom>
-            <v-btn slot="activator" flat @click="query.flag=0">
+            <v-btn slot="activator" flat @click="pagination.flag=0">
               <i class="material-icons">delete</i>
             </v-btn>
             <span>List delete</span>
           </v-tooltip>
         </v-btn-toggle>
       </v-card-title>
-      <v-data-table class="elevation-1" v-model="selected" select-all item-key="name" :headers="headers"
-        :items="items" :rows-per-page-items="rowPerPage">
+      <v-data-table class="elevation-1" v-model="selected" select-all item-key="id" :headers="headers"
+        :items="items" :rows-per-page-items="rowPerPage" :pagination.sync="pagination" :search="pagination.search">
         <!--:loading="loading" :pagination.sync="pagination" :total-items="totalItems" -->
         <template slot="items" slot-scope="props">
           <tr>
@@ -40,14 +40,14 @@
             <td>{{ FormatDate(props.item.created_at,'DD/MM/YYYY hh:mm',true) }}</td>
             <td v-html="props.item.icon"></td>
             <td class="justify-center layout px-0">
-              <v-btn v-if="query.flag===1" icon class="mx-0" @click="handleItems(props.item)">
+              <v-btn v-if="pagination.flag===1" icon class="mx-0" @click="handleItems(props.item)">
                 <i class="material-icons info--text">layers</i>
               </v-btn>
               <v-btn icon class="mx-0" @click="handleEdit(props.item)">
                 <i class="material-icons teal--text">edit</i>
               </v-btn>
               <v-btn icon class="mx-0" @click="handleDelete(props.item)">
-                <i v-if="query.flag===1" class="material-icons error--text">delete</i>
+                <i v-if="pagination.flag===1" class="material-icons error--text">delete</i>
                 <i v-else class="material-icons info--text">refresh</i>
               </v-btn>
             </td>
@@ -93,22 +93,25 @@ export default {
     localDialog: false,
     localItemsDialog: false,
     confirmDialog: false,
-    query: { search: '', flag: 1 },
-    // pagination: {},
+    // query: { search: '', sort: 'orders', direction: 'asc', flag: 1 },
+    pagination: {search:'', sortBy: 'orders', flag: 1},
     rowPerPage: [5, 10, 25, 50, 100, { text: "All", value: -1 }],
     headers: [
       // { text: 'ID', value: 'id', align: 'left' },
       { text: 'Name', value: 'name', align: 'left' },
       { text: 'Code', value: 'code', align: 'left' },
-      { text: 'Orders', value: 'orders' },
+      { text: 'Orders', value: 'orders', sortable: true  },
       { text: 'Created', value: 'created.at' },
       { text: 'Icon', value: 'icon' },
       { text: '#', value: '#', sortable: false }
     ]
   }),
+  mounted() {
+    this.$store.dispatch('languages/init')
+  },
   computed: {
     items() {
-      // var query = {
+      // var pagination = {
       // search: this.search,
       // page: this.pagination.page,
       // descending: this.pagination.descending,
@@ -117,14 +120,14 @@ export default {
       // totalItems: this.pagination.totalItems,
       // flag: 0
       // }
-      var rs = this.$store.getters['languages/getFilter'](this.query)
+      var rs = this.$store.getters['languages/getFilter'](this.pagination)
       return rs
     }
   },
   watch: {
-    // query: {
+    // pagination: {
     //   handler() {
-    //     this.items = this.$store.dispatch('languages/pagination', this.query)
+    //     this.items = this.$store.dispatch('languages/pagination', this.pagination)
     //   },
     //   deep: true
     // },
@@ -141,7 +144,6 @@ export default {
     localItemsDialog(val) { this.$emit('handleItemsDialog', val) }
   },
   created() {
-    this.$store.dispatch('languages/init')
     // this.$store.dispatch('languages/select')
     //{
     //     descending: this.pagination.descending,

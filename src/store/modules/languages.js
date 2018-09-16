@@ -48,13 +48,21 @@ export default {
           return row['flag'] == query.flag
         })
       }
-      if (query.search) {
-        items = items.filter(function(row) {
-          return Object.keys(row).some(function(key) {
-            return String(row[key]).toLowerCase().indexOf(query.search) > -1
-          })
-        })
-      }
+      // if (query.search) {
+      //   items = items.filter(function(row) {
+      //     return Object.keys(row).some(function(key) {
+      //       return String(row[key]).toLowerCase().indexOf(query.search) > -1
+      //     })
+      //   })
+      // }
+      // if (query.sort) {
+      //   var order = query.direction === 'asc' ? -1 : 1
+      //   items = items.slice().sort(function (a, b) {
+      //     a = a[query.sort]
+      //     b = b[query.sort]
+      //     return (a === b ? 0 : a > b ? 1 : -1) * order
+      //   })
+      // }
       return items
     }
   },
@@ -79,10 +87,10 @@ export default {
   },
   actions: {
     init(context) {
-      // state.items = []
       docChanges({
         context: context,
-        collections: FBStore.collection(collection).orderBy('created_at', 'desc')
+        items: context.state.items,
+        collections: FBStore.collection(collection).orderBy('orders', 'desc')
         // .startAfter((page - 1) * rowsPerPage)
         // .limit(rowsPerPage)
       })

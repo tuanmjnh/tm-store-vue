@@ -26,18 +26,19 @@ FBStore.settings(settings)
 // export const FBMessaging = firebase.messaging()
 // export const FBFuntions = firebase.functions()
 // Functions
-export function docChanges({ context, collections, resolve, reject }) {
+export function docChanges({ context, collections, items, resolve, reject }) {
   var item = {}
   collections.onSnapshot(snapshot => {
     snapshot.docChanges().forEach(change => {
       const source = change.doc.metadata.hasPendingWrites ? 'Local' : 'Server'
+      if (items.findIndex(x => x.id === change.doc.id) > -1) return
       item = Object.assign({ id: change.doc.id }, change.doc.data())
       if (change.type === "added") {
         if (source === 'Server') {
           context.commit('PUSH_ITEMS', item)
           // data.push(item)
         }
-        // console.log("Added: ", change.doc.data())
+        console.log("Added: ", change.doc.data())
       }
       if (change.type === "modified") {
         if (source === 'Server') {
