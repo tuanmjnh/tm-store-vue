@@ -26,7 +26,7 @@ FBStore.settings(settings)
 // export const FBMessaging = firebase.messaging()
 // export const FBFuntions = firebase.functions()
 // Functions
-export function docChanges({ context, collections, items, resolve, reject }) {
+export function docChanges({ collections, items, resolve, reject }) {
   var item = {}
   collections.onSnapshot(snapshot => {
     snapshot.docChanges().forEach(change => {
@@ -35,14 +35,17 @@ export function docChanges({ context, collections, items, resolve, reject }) {
       item = Object.assign({ id: change.doc.id }, change.doc.data())
       if (change.type === "added") {
         if (source === 'Server') {
-          context.commit('PUSH_ITEMS', item)
+          items.push(item)
+          // context.commit('PUSH_ITEMS', item)
           // data.push(item)
         }
-        console.log("Added: ", change.doc.data())
+        // console.log("Added: ", change.doc.data())
       }
       if (change.type === "modified") {
         if (source === 'Server') {
-          context.commit('UPDATE_ITEMS', item)
+          const index = items.findIndex(x => x.id === item.id)
+          items.splice(index, 1, item)
+          // context.commit('UPDATE_ITEMS', item)
         }
         // if (change.oldIndex !== change.newIndex) {
         //   data.splice(change.oldIndex, 1)
@@ -53,17 +56,15 @@ export function docChanges({ context, collections, items, resolve, reject }) {
         // console.log("Modified: ", change.doc.data())
       }
       if (change.type === "removed") {
-        context.commit('REMOVE_ITEMS', item)
+        const index = items.findIndex(x => x.id === item.id)
+        if (index >= 0) items.splice(index, 1)
+        // context.commit('REMOVE_ITEMS', item)
         // console.log("Removed: ", change.doc.data())
       }
       // console.log(source)
-    }, (error) => {
-      if (typeof reject === 'function') reject(error)
-    })
+    }, (error) => { if (typeof reject === 'function') reject(error) })
     if (typeof resolve === 'function') resolve(item)
-  }, (error) => {
-    if (typeof reject === 'function') reject(error)
-  })
+  }, (error) => { if (typeof reject === 'function') reject(error) })
 }
 
 export default firebase

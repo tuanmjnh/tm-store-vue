@@ -1,6 +1,7 @@
 <template>
   <!-- <router-view></router-view> -->
   <div>
+    {{$route.params.lang}}
     <add :dialog="dialog" @handleDialog="dialog=$event"></add>
     <!-- <items :dialog="itemsDialog" @handleDialog="itemsDialog=$event"></items> -->
     <list :dialog="dialog" @handleDialog="dialog=$event"></list>

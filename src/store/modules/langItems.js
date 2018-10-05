@@ -1,6 +1,6 @@
 import { SET_CATCH, SET_ITEMS, PUSH_ITEMS, UPDATE_ITEMS, REMOVE_ITEMS, SET_ITEM, SET_MESSAGE } from '../mutation-type'
 import { FBStore, timestamp, docChanges } from '@/plugins/firebaseInit'
-const collection = 'languages_items'
+const collection = 'langItems'
 export default {
   namespaced: true,
   state: {
@@ -76,10 +76,12 @@ export default {
     }
   },
   actions: {
-    init(context) {
+    init({ state }) {
       docChanges({
-        context: context,
-        collections: FBStore.collection(collection).orderBy('created_at', 'desc')
+        items: state.items,
+        collections: FBStore.collection(collection).orderBy('orders', 'desc')
+        // .startAfter((page - 1) * rowsPerPage)
+        // .limit(rowsPerPage)
       })
     },
     select({ commit, state }) {

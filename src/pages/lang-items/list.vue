@@ -29,24 +29,9 @@
             </v-list-tile>
           </v-list>
         </v-menu>
-        <!-- <v-btn-toggle v-model="toggle_one" mandatory>
-          <v-tooltip bottom>
-            <v-btn slot="activator" flat @click="pagination.flag=1">
-              <i class="material-icons">view_list</i>
-            </v-btn>
-            <span>List use</span>
-          </v-tooltip>
-          <v-tooltip bottom>
-            <v-btn slot="activator" flat @click="pagination.flag=0">
-              <i class="material-icons">delete</i>
-            </v-btn>
-            <span>List delete</span>
-          </v-tooltip>
-        </v-btn-toggle> -->
       </v-card-title>
       <v-data-table class="elevation-1" v-model="selected" select-all item-key="id" :headers="headers"
         :items="items" :rows-per-page-items="rowPerPage" :pagination.sync="pagination" :search="pagination.search">
-        <!--:loading="loading" :pagination.sync="pagination" :total-items="totalItems" -->
         <template slot="items" slot-scope="props">
           <tr>
             <td>
@@ -120,13 +105,9 @@ export default {
   data: () => ({
     loading: true,
     selected: [],
-    // totalItems: 0,
-    // items: [],
     toggle_one: 0,
     localDialog: false,
-    // localItemsDialog: false,
     confirmDialog: false,
-    // query: { search: '', sort: 'orders', direction: 'asc', flag: 1 },
     pagination: { search: '', sortBy: 'orders', flag: 1 },
     rowPerPage: [5, 10, 25, 50, 100, { text: "All", value: -1 }],
     headers: [
@@ -144,55 +125,20 @@ export default {
   },
   computed: {
     items() {
-      // var pagination = {
-      // search: this.search,
-      // page: this.pagination.page,
-      // descending: this.pagination.descending,
-      // rowsPerPage: this.pagination.rowsPerPage,
-      // sortBy: this.pagination.sortBy,
-      // totalItems: this.pagination.totalItems,
-      // flag: 0
-      // }
       var rs = this.$store.getters['languages/getFilter'](this.pagination)
       return rs
     }
   },
   watch: {
-    // pagination: {
-    //   handler() {
-    //     this.items = this.$store.dispatch('languages/pagination', this.pagination)
-    //   },
-    //   deep: true
-    // },
-    // items(val) {
-    // this.totalItems = val.length
-    // console.log(this.pagination)
-    // },
     dialog(val) { this.localDialog = val },
     localDialog(val) {
       this.$emit('handleDialog', val)
       if (!val) this.$store.dispatch('languages/item')
     },
-    // itemsDialog(val) { this.localItemsDialog = val },
-    // localItemsDialog(val) { this.$emit('handleItemsDialog', val) }
-  },
-  created() {
-    // this.$store.dispatch('languages/select')
-    //{
-    //     descending: this.pagination.descending,
-    //     page: this.pagination.page,
-    //     rowsPerPage: this.pagination.rowsPerPage,
-    //     sortBy: this.pagination.sortBy,
-    //     totalItems: this.pagination.totalItems
-    // }
   },
   methods: {
-    handleList(flag) {
-
-    },
     handleItems(item) {
-      this.$router.push('/lang-items/'+item.code);
-      // this.localItemsDialog = !this.localItemsDialog
+      this.$store.dispatch('languages/item', item)
     },
     handleEdit(item) {
       this.$store.dispatch('languages/item', item)
@@ -201,9 +147,6 @@ export default {
     handleDelete(item) {
       this.confirmDialog = true
       this.$store.dispatch('languages/item', item)
-      // console.log(this.$store.state.languages.item)
-      // const index = this.desserts.indexOf(item)
-      // confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
     },
     handleConfirm() {
       this.confirmDialog = false

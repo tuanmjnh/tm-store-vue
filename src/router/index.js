@@ -43,6 +43,13 @@ const routes = [{
     meta: { description: 'Overview of environment', requiresAuth: true }
   },
   {
+    path: '/lang-items/:lang?',
+    name: 'lang-items',
+    alias: '',
+    component: () => import ('../pages/lang-items/index'),
+    meta: { description: 'Overview of environment', requiresAuth: true }
+  },
+  {
     path: '/informations',
     name: 'informations',
     alias: '',

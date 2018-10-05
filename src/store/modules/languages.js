@@ -86,10 +86,9 @@ export default {
     }
   },
   actions: {
-    init(context) {
+    init({ state }) {
       docChanges({
-        context: context,
-        items: context.state.items,
+        items: state.items,
         collections: FBStore.collection(collection).orderBy('orders', 'desc')
         // .startAfter((page - 1) * rowsPerPage)
         // .limit(rowsPerPage)

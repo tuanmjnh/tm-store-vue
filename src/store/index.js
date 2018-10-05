@@ -9,13 +9,13 @@ import { SET_MESSAGE, SET_CATCH } from './mutation-type'
 // import nav from './modules/nav'
 import users from './modules/users'
 import languages from './modules/languages'
-import languages_items from './modules/languages_items'
+import langItems from './modules/langItems'
 Vue.use(Vuex)
 export default new Vuex.Store({
   modules: {
     users,
     languages,
-    languages_items
+    langItems
   },
   state: {
     _noimage: `Uploads/noimage.jpg`,

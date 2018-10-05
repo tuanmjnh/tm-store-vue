@@ -177,7 +177,6 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('languages_items/init')
   }
 }
 </script>
