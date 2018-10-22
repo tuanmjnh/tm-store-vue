@@ -1,16 +1,18 @@
 import { SET_CATCH, SET_ITEMS, PUSH_ITEMS, UPDATE_ITEMS, REMOVE_ITEMS, SET_ITEM, SET_MESSAGE } from '../mutation-type'
 import { FBStore, timestamp, docChanges } from '@/plugins/firebaseInit'
-const collection = 'langItems'
+const collection = 'lang_items'
 export default {
   namespaced: true,
   state: {
     items: [],
     item: {},
+    values :{},
+    group: [],
     default: {
       code: '',
-      modules: '',
-      data: [],
-      orders: 1,
+      group: '',
+      key: '',
+      value: {},
       created_by: '',
       created_at: new Date(),
       updated_by: '',
@@ -73,13 +75,16 @@ export default {
     [REMOVE_ITEMS](state, item) {
       const index = state.items.findIndex(x => x.id === item.id)
       if (index >= 0) state.items.splice(index, 1)
-    }
+    },
+    ['SET_VALUES'](state, values) {
+      state.values = Object.assign({}, values)
+    },
   },
   actions: {
     init({ state }) {
       docChanges({
         items: state.items,
-        collections: FBStore.collection(collection).orderBy('orders', 'desc')
+        collections: FBStore.collection(collection).orderBy('created_at', 'asc')
         // .startAfter((page - 1) * rowsPerPage)
         // .limit(rowsPerPage)
       })
@@ -149,6 +154,10 @@ export default {
     item({ commit, state }, item) {
       if (item) commit(SET_ITEM, item)
       else commit(SET_ITEM, state.default)
+    },
+    values({ commit }, values) {
+      if (values) commit('SET_VALUES', values)
+      else commit(SET_ITEM, {})
     }
   }
 }

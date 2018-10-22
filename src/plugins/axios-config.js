@@ -1,17 +1,18 @@
 import axios from 'axios'
-var host = 'http://localhost:8000/'
+import * as _auth from './storage-auth'
+var host = 'http://localhost:5000/'
 // var host = 'http://mle.dominet.com.vn/'
 // var host = 'http://localhost/mle/'
 var api = 'api/'
-const mle = axios.create({
+const vnptbkn = axios.create({
   host: host,
   api: api,
   baseURL: host + api,
   // timeout: 1000,
   headers: {
-    Authorization: `Bearer ${localStorage.getItem('user-token') || ''}`,
-    Author: localStorage.getItem('user-auth') || '',
-    Remember: true
+    Authorization: _auth.GetToken() || '',
+    Author: _auth.GetUser() || '',
+    Remember: _auth.GetRemember()
   }
 })
 
@@ -24,4 +25,4 @@ const mle = axios.create({
 //   }
 // });
 
-export { mle }
+export { vnptbkn }

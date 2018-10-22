@@ -2,7 +2,8 @@
   <div>
     <v-card>
       <v-card-title>
-        <v-text-field v-model="pagination.search" append-icon="search" label="Search" single-line hide-details></v-text-field>
+        <v-text-field v-model="pagination.search" append-icon="search" label="Search"
+          single-line hide-details></v-text-field>
         <v-spacer></v-spacer>
         <v-tooltip bottom>
           <v-btn slot="activator" color="primary" small fab flat @click="localDialog=!localDialog">
@@ -44,8 +45,9 @@
           </v-tooltip>
         </v-btn-toggle> -->
       </v-card-title>
-      <v-data-table class="elevation-1" v-model="selected" select-all item-key="id" :headers="headers"
-        :items="items" :rows-per-page-items="rowPerPage" :pagination.sync="pagination" :search="pagination.search">
+      <v-data-table class="elevation-1" v-model="selected" select-all item-key="id"
+        :headers="headers" :items="items" :rows-per-page-items="rowPerPage"
+        :pagination.sync="pagination" :search="pagination.search">
         <!--:loading="loading" :pagination.sync="pagination" :total-items="totalItems" -->
         <template slot="items" slot-scope="props">
           <tr>
@@ -56,29 +58,30 @@
             <td>{{ props.item.name }}</td>
             <td>{{ props.item.code }}</td>
             <td>{{ props.item.orders }}</td>
-            <td>{{ FormatDate(props.item.created_at,'DD/MM/YYYY hh:mm',true) }}</td>
+            <td>{{ props.item.created_at|formatDate('DD/MM/YYYY hh:mm') }}</td>
             <td v-html="props.item.icon"></td>
             <td class="justify-center layout px-0">
               <v-tooltip bottom>
-                <v-btn v-if="pagination.flag===1" icon class="mx-0" slot="activator" @click="handleItems(props.item)">
+                <v-btn v-if="pagination.flag===1" icon class="mx-0" slot="activator"
+                  @click="onItems(props.item)">
                   <i class="material-icons info--text">layers</i>
                 </v-btn>
                 <span>Details</span>
               </v-tooltip>
               <v-tooltip bottom>
-                <v-btn icon class="mx-0" slot="activator" @click="handleEdit(props.item)">
+                <v-btn icon class="mx-0" slot="activator" @click="onEdit(props.item)">
                   <i class="material-icons teal--text">edit</i>
                 </v-btn>
                 <span>Edit</span>
               </v-tooltip>
               <v-tooltip bottom v-if="pagination.flag===1">
-                <v-btn icon class="mx-0" slot="activator" @click="handleDelete(props.item)">
+                <v-btn icon class="mx-0" slot="activator" @click="onDelete(props.item)">
                   <i class="material-icons error--text">delete</i>
                 </v-btn>
                 <span>Delete</span>
               </v-tooltip>
               <v-tooltip bottom v-if="pagination.flag===0">
-                <v-btn icon class="mx-0" slot="activator" @click="handleDelete(props.item)">
+                <v-btn icon class="mx-0" slot="activator" @click="onDelete(props.item)">
                   <i class="material-icons info--text">refresh</i>
                 </v-btn>
                 <span>Recover</span>
@@ -88,31 +91,14 @@
         </template>
       </v-data-table>
     </v-card>
-    <v-dialog v-model="confirmDialog" width="500">
-      <v-card>
-        <v-card-title class="headline grey lighten-2" primary-title>
-          Message
-        </v-card-title>
-        <v-card-text>
-          Are you sure?
-        </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" flat @click="handleConfirm">
-            I accept
-          </v-btn>
-          <v-btn color="secondary" flat @click="confirmDialog=false">
-            Cancel
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <tpl-confirm :dialog="confirmDialog" @ok="onConfirm"></tpl-confirm>
   </div>
 </template>
 
 <script>
+import confirm from '@/components/confirm'
 export default {
+  components: { 'tpl-confirm': confirm },
   props: {
     dialog: { type: Boolean, default: false },
     // itemsDialog: { type: Boolean, default: false },
@@ -187,26 +173,23 @@ export default {
     // }
   },
   methods: {
-    handleList(flag) {
-
-    },
-    handleItems(item) {
-      this.$router.push('/lang-items/'+item.code);
+    handleList(flag) { },
+    onItems(item) {
+      this.$router.push('/lang-items/' + item.code);
       // this.localItemsDialog = !this.localItemsDialog
     },
-    handleEdit(item) {
+    onEdit(item) {
       this.$store.dispatch('languages/item', item)
       this.localDialog = true
     },
-    handleDelete(item) {
-      this.confirmDialog = true
+    onDelete(item) {
+      this.confirmDialog = !this.confirmDialog
       this.$store.dispatch('languages/item', item)
       // console.log(this.$store.state.languages.item)
       // const index = this.desserts.indexOf(item)
       // confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
     },
-    handleConfirm() {
-      this.confirmDialog = false
+    onConfirm() {
       this.$store.dispatch('languages/delete')
     }
   }

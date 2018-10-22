@@ -21,20 +21,34 @@
               <v-text-field v-model="item.orders" label="Orders"></v-text-field>
             </v-flex>
             <v-flex xs12 sm6 md4>
-              <v-switch color="primary" :label="item.flag===1?'Show':'Hide'" :true-value="1" :false-value="0"
-                v-model.number="item.flag"></v-switch>
+              <v-switch color="primary" :label="item.flag===1?'Show':'Hide'" :true-value="1"
+                :false-value="0" v-model.number="item.flag"></v-switch>
             </v-flex>
             <v-flex xs12 sm12 md12>
               <quill-editor v-model="item.desc" ref="descriptions">
               </quill-editor>
               <!-- <tinymce id="desc" v-model="item.desc"></tinymce> -->
             </v-flex>
+            <v-flex xs12 sm12 md12>
+              <div class="dflex">
+                <a v-if="item.attach" class="white--text v-btn v-btn--outline v-btn--depressed blue-grey--text m-0"
+                  :href="item.attach" target="_blank"><i class="material-icons">attach_file</i>
+                  {{item.attach|pathToFileName}}</a>
+                <v-spacer></v-spacer>
+                <uploadFirestoreFiles :multiple="false" button="Upload" :firebase="firebase"
+                  path="languages" :rules="{extension:'.json'}" :data="uploadData" :error="uploadError"></uploadFirestoreFiles>
+              </div>
+            </v-flex>
           </v-layout>
         </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="primary" flat @click.native="handleSave">
+        <v-btn color="primary" flat @click.native="onCheck">
+          <!-- <i class="material-icons">check</i> -->
+          Check
+        </v-btn>
+        <v-btn color="primary" flat @click.native="onSave">
           <!-- <i class="material-icons">check</i> -->
           Update
         </v-btn>
@@ -52,15 +66,19 @@ import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
 import { quillEditor } from 'vue-quill-editor'
-import { FBStore, timestamp } from '@/plugins/firebaseInit'
+import firebase from '@/plugins/firebaseInit'
+import uploadFirestoreFiles from '@/components/upload-firestore-files'
 export default {
-  components: { quillEditor },
+  components: { quillEditor, uploadFirestoreFiles },
   props: {
     dialog: { type: Boolean, default: false }
   },
   data: () => ({
     localDialog: false,
-    editedIndex: -1
+    editedIndex: -1,
+    firebase: firebase,
+    uploadData: {},
+    uploadError: {},
   }),
   mounted() {
     this.$store.dispatch('languages/item')
@@ -79,12 +97,27 @@ export default {
     localDialog(val) {
       this.$emit('handleDialog', val)
       if (!val) this.$store.dispatch('languages/item')
+    },
+    uploadData: {
+      handler(val) {
+        console.log(val.data)
+      }, deep: true
+    },
+    uploadError: {
+      handler(val) {
+        console.log(val)
+      }, deep: true
     }
   },
   methods: {
-    handleSave() {
+    onSave() {
+      this.item.attach = this.uploadData.path
       if (this.item.id) this.$store.dispatch('languages/update')
       else this.$store.dispatch('languages/insert')
+    },
+    onCheck() {
+      var a = Object
+      return a
     }
   }
 }

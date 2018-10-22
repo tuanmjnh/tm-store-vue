@@ -13,6 +13,8 @@ export default {
       icon: '<i class="material-icons">outlined_flag</i>',
       desc: '',
       orders: 1,
+      attach: '',
+      lang: '',
       created_by: '',
       created_at: new Date(),
       updated_by: '',

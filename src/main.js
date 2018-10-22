@@ -6,8 +6,11 @@ import App from './App.vue'
 import $ from 'jquery';
 window.jQuery = $;
 window.$ = $;
-// 
-import mixins from './mixins'
+
+// Filters
+import filters from './plugins/filters'
+// Mixins
+import mixins from './plugins/mixins'
 // Store
 import store from './store'
 // Router

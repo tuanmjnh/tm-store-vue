@@ -8,33 +8,55 @@
       <v-card-text>
         <v-container grid-list-md>
           <v-layout wrap>
-            <v-flex xs12 sm8 md8>
-              <v-text-field v-model="item.name" label="Name"></v-text-field>
+            <v-flex xs12 sm12 md12>
+              <v-text-field v-model="item.key" label="Group"></v-text-field>
             </v-flex>
             <v-flex xs12 sm4 md4>
-              <v-text-field v-model="item.code" label="Code"></v-text-field>
+              <v-text-field v-model="formData.key" label="Key"></v-text-field>
             </v-flex>
-            <v-flex xs12 sm6 md4>
-              <v-text-field v-model="item.icon" label="Icon"></v-text-field>
+            <v-flex xs12 sm8 md8>
+              <v-text-field v-model="formData.value" label="Value"></v-text-field>
             </v-flex>
-            <v-flex xs12 sm6 md4>
-              <v-text-field v-model="item.orders" label="Orders"></v-text-field>
-            </v-flex>
-            <v-flex xs12 sm6 md4>
-              <v-switch color="primary" :label="item.flag===1?'Show':'Hide'" :true-value="1" :false-value="0"
-                v-model.number="item.flag"></v-switch>
-            </v-flex>
-            <v-flex xs12 sm12 md12>
-              <quill-editor v-model="item.desc" ref="descriptions">
-              </quill-editor>
-              <!-- <tinymce id="desc" v-model="item.desc"></tinymce> -->
-            </v-flex>
+          </v-layout>
+          <v-layout wrap>
+            <template v-for="(v, k) in item.value" class="">
+              <div class="flex xs12 sm4 md4" :key="k">
+                <div class="v-input v-text-field">
+                  <div class="v-input__control">
+                    <div class="v-input__slot">
+                      <div class="v-text-field__slot">
+                        <input type="text" :value="k" placeholder="Key" @change="onChangeKey(k, $event.target.value)">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex xs12 sm7 md7" :key="k+v">
+                <div class="v-input v-text-field">
+                  <div class="v-input__control">
+                    <div class="v-input__slot">
+                      <div class="v-text-field__slot">
+                        <input type="text" :value="v" placeholder="Value" @change="onChangeValue(k, $event.target.value)">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="spacer" :key="k+'spacer'"></div>
+              <div :key="k+'btn'" style="position:relative;top:3px">
+                <v-btn color="error" small fab flat><i class="material-icons">close</i></v-btn>
+              </div>
+            </template>
           </v-layout>
         </v-container>
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="primary" flat @click.native="handleSave">
+        <v-btn color="primary" flat @click.native="onCheck">
+          <!-- <i class="material-icons">check</i> -->
+          Check
+        </v-btn>
+        <v-btn color="primary" flat @click.native="onSave">
           <!-- <i class="material-icons">check</i> -->
           Update
         </v-btn>
@@ -48,29 +70,33 @@
 </template>
 
 <script>
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
-import { quillEditor } from 'vue-quill-editor'
 import { FBStore, timestamp } from '@/plugins/firebaseInit'
 export default {
-  components: { quillEditor },
   props: {
     dialog: { type: Boolean, default: false }
   },
   data: () => ({
     localDialog: false,
-    editedIndex: -1
+    editedIndex: -1,
+    value: {},
+    formData: {
+      key: '',
+      value: ''
+    }
   }),
   mounted() {
-    this.$store.dispatch('languages/item')
+    this.$store.dispatch('lang_items/item')
   },
   computed: {
     formTitle() {
-      return this.$store.state.languages.item.id ? 'Edit Item' : 'New Item'
+      return this.$store.state.lang_items.item.id ? 'Edit Item' : 'New Item'
     },
     item() {
-      var item = this.$store.state.languages.item
+      var item = this.$store.state.lang_items.item
+      return item
+    },
+    values() {
+      var item = this.$store.state.lang_items.values
       return item
     }
   },
@@ -78,13 +104,29 @@ export default {
     dialog(val) { this.localDialog = val },
     localDialog(val) {
       this.$emit('handleDialog', val)
-      if (!val) this.$store.dispatch('languages/item')
+      if (!val) this.$store.dispatch('lang_items/item')
     }
   },
   methods: {
-    handleSave() {
-      if (this.item.id) this.$store.dispatch('languages/update')
-      else this.$store.dispatch('languages/insert')
+    onSave() {
+      // var key = 'test'
+      // this.item.value = { [this.formData.key]: this.formData.value }
+      // this.item.value[key] = this.formData.value
+      // console.log(this.item.value)
+      this.item.value = this.values
+      if (this.item.id) this.$store.dispatch('lang_items/update')
+      else this.$store.dispatch('lang_items/insert')
+    },
+    onCheck() {
+      console.log(this.item.value)
+    },
+    onChangeKey(valOld, valNew) {
+      var val = this.values[valOld]
+      delete this.values[valOld]
+      this.values[valNew] = val
+    },
+    onChangeValue(key, valNew) {
+      this.values[key] = valNew
     }
   }
 }

@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import moment from 'moment'
+import { FormatDate, PathToFileName } from './helpers'
 const urlParser = document.createElement('a')
 
 export function domain(url) {
@@ -22,15 +22,11 @@ export function capitalize(val) {
   val = val.toString()
   return val.charAt(0).toUpperCase() + val.slice(1)
 }
-export function formatDate(val, format = 'DD/MM/YYYY hh:mm') {
-  if (val) return moment(String(val)).format(format)
-  return val
-}
-
 // Import Install and register helper items
 Vue.filter('count', count)
 Vue.filter('domain', domain)
 Vue.filter('prettyDate', prettyDate)
 Vue.filter('pluralize', pluralize)
 Vue.filter('capitalize', capitalize)
-Vue.filter('formatDate', formatDate)
+Vue.filter('formatDate', FormatDate)
+Vue.filter('pathToFileName', PathToFileName)

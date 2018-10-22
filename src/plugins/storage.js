@@ -1,61 +1,33 @@
-const get = function(isDefault = false) {
-  if (isDefault)
-    return {
-      token: '',
-      user: '',
-      remember: true
-    }
-  else {
-    var remember =
-      localStorage.getItem('user-remember') &&
-      localStorage.getItem('user-remember') !== undefined
-        ? true
-        : false
-    if (remember === true) {
-      return {
-        token: localStorage.getItem('user-token') || '',
-        user: localStorage.getItem('user-auth') || '',
-        remember: remember
-      }
-    } else {
-      return {
-        token: sessionStorage.getItem('user-token') || '',
-        user: sessionStorage.getItem('user-auth') || '',
-        remember: remember
-      }
-    }
-  }
-}
-const set = function(axios, value, isRemove = false) {
-  if (isRemove) {
-    // if the request fails, remove any possible user token if possible localstorage
-    localStorage.removeItem('user-token')
-    localStorage.removeItem('user-auth')
-    localStorage.removeItem('user-remember')
-    // if the request fails, remove any possible user token if possible sessionStorage
-    sessionStorage.removeItem('user-token')
-    sessionStorage.removeItem('user-auth')
-    sessionStorage.removeItem('user-remember')
-    //
-    axios.defaults.headers.Authorization = `Bearer `
-    axios.defaults.headers.Author = ''
-    axios.defaults.headers.Remember = true
+const Set = function(key, value, isLocal = true, isRemove = true) {
+  if (isLocal) {
+    localStorage.setItem(key, value);
+    if (isRemove) Remove(key, false);
   } else {
-    if (value.remember) {
-      // store the token in localstorage
-      localStorage.setItem('user-token', value.token)
-      localStorage.setItem('user-auth', value.user)
-      localStorage.setItem('user-remember', value.remember)
-    } else {
-      // store the token in sessionStorage
-      sessionStorage.setItem('user-token', value.token)
-      sessionStorage.setItem('user-auth', value.user)
-      sessionStorage.setItem('user-remember', value.remember)
-    }
-    axios.defaults.headers.Authorization = `Bearer ${value.token}`
-    axios.defaults.headers.Author = value.user
-    axios.defaults.headers.Remember = value.remember
+    sessionStorage.setItem(key, value);
+    if (isRemove) Remove(key, true);
   }
-}
+};
+const Get = function(key, isLocal = true) {
+  if (isLocal) return localStorage.getItem(key);
+  return sessionStorage.getItem(key);
+};
+const Remove = function(key, isLocal = true) {
+  if (isLocal) localStorage.removeItem(key);
+  else sessionStorage.removeItem(key);
+};
 
-export { get, set }
+export { Set, Get, Remove };
+// export class Storage {
+//   Set(key, value, isSession = false) {
+//     if (isSession) return sessionStorage.setItem(key, value);
+//     else return localStorage.setItem(key, value);
+//   }
+//   Get(key, isSession = false) {
+//     if (isSession) return sessionStorage.getItem(key);
+//     else return localStorage.getItem(key);
+//   }
+//   Remove(key, isSession = false) {
+//     if (isSession) return sessionStorage.removeItem(key);
+//     else return localStorage.removeItem(key);
+//   }
+// }
