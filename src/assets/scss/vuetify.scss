@@ -1,0 +1,25 @@
+.v-navigation-drawer--mini-variant {
+  .v-list__group__header__prepend-icon {
+    justify-content: center;
+  }
+}
+
+// table
+.row-icon {
+  i {
+    position: relative;
+    top: 3px;
+  }
+}
+
+.dflex {
+  display: flex;
+}
+
+.m-0 {
+  margin: 0 !important
+}
+
+.p-0 {
+  padding: 0 !important
+}
