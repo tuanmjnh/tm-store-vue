@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import { FormatDate, PathToFileName } from './helpers'
+import { FormatDate } from './helpers'
 const urlParser = document.createElement('a')
 
 export function domain(url) {
@@ -29,4 +29,3 @@ Vue.filter('prettyDate', prettyDate)
 Vue.filter('pluralize', pluralize)
 Vue.filter('capitalize', capitalize)
 Vue.filter('formatDate', FormatDate)
-Vue.filter('pathToFileName', PathToFileName)

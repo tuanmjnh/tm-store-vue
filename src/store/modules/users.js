@@ -26,7 +26,7 @@ export default {
     getAll(state) {
       return FBStore.collection(collection).get().then(qss => {
         qss.forEach(doc => {
-          var item = doc.data()
+          const item = doc.data()
           item.id = doc.id
           state.items.push(item)
         })
@@ -42,7 +42,7 @@ export default {
       return state.items.filter(x => x.flag === flag)
     },
     getFilter: state => query => {
-      var items = state.items
+      let items = state.items
       if (query.flag >= 0) {
         items = items.filter(function(row) {
           return row['flag'] == query.flag
@@ -85,11 +85,11 @@ export default {
       })
     },
     select({ commit, state }) {
-      var first = FBStore.collection(collection).orderBy('created_at', 'asc')
-      var x = first.get().then(query => {
-        var items = []
+      const first = FBStore.collection(collection).orderBy('created_at', 'asc')
+      const x = first.get().then(query => {
+        const items = []
         query.forEach(function(doc) {
-          var item = state.default
+          let item = state.default
           item = doc.data()
           item.id = doc.id
           items.push(item)
@@ -98,7 +98,7 @@ export default {
       })
     },
     async insert({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       item.created_by = 'Admin'
       item.created_at = timestamp
       return FBStore.collection(collection)
@@ -112,7 +112,7 @@ export default {
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     update({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       item.updated_by = 'Admin'
       item.updated_at = timestamp
       FBStore.collection(collection).doc(item.id).set(item)
@@ -123,7 +123,7 @@ export default {
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     delete({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       item.deleted_by = 'Admin'
       item.deleted_at = timestamp
       FBStore.collection(collection).doc(item.id)
@@ -137,7 +137,7 @@ export default {
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     remove({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       FBStore.collection(collection).doc(item.id).delete()
         .then(docRef => {
           commit(REMOVE_ITEMS, item)

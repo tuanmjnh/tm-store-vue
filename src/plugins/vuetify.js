@@ -1,9 +1,11 @@
 import Vue from 'vue'
+import 'vuetify/src/stylus/app.styl'
 import {
   Vuetify,
   VApp,
   VNavigationDrawer,
   VFooter,
+  VForm,
   VList,
   VBtn,
   VBtnToggle,
@@ -13,26 +15,29 @@ import {
   VDivider,
   VMenu,
   VCard,
+  VTabs,
   VTooltip,
   VSwitch,
   VCheckbox,
   VCombobox,
   VSelect,
   VTextField,
+  VTextarea,
   VAlert,
   VDataTable,
   VPagination,
   VDatePicker,
   VDialog,
   VSnackbar,
-  transitions
+  transitions,
+  VProgressCircular
 } from 'vuetify'
-import 'vuetify/src/stylus/app.styl'
 Vue.use(Vuetify, {
   components: {
     VApp,
     VNavigationDrawer,
     VFooter,
+    VForm,
     VList,
     VBtn,
     VBtnToggle,
@@ -42,25 +47,30 @@ Vue.use(Vuetify, {
     VDivider,
     VMenu,
     VCard,
+    VTabs,
     VTooltip,
     VSwitch,
     VCheckbox,
     VCombobox,
     VSelect,
     VTextField,
+    VTextarea,
     VAlert,
     VDataTable,
     VPagination,
     VDatePicker,
     VDialog,
     VSnackbar,
-    transitions
+    transitions,
+    VProgressCircular
   },
   theme: {
     primary: '#1976D2',
     secondary: '#424242',
+    default: '#757575',
     accent: '#82B1FF',
     error: '#dc3545',
+    danger: '#cc2032',
     info: '#2196F3',
     success: '#28a745',
     warning: '#FFC107'

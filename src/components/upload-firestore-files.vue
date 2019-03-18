@@ -1,7 +1,7 @@
 <template>
   <div class="file-upload">
     <input v-if="uploadReady" type="file" id="file-upload" :multiple="multiple===true?true:false"
-      :accept="rules.extension" @change="onChange($event)" />
+      :accept="extension" @change="onChange($event)" />
     <div v-if="button">
       <div class="btn-upload">
         <v-tooltip bottom>
@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { NewGuid, CheckExtension, GetExtension } from '@/plugins/helpers';
+import { NewGuid } from '@/plugins/helpers';
 export default {
   data: () => ({
     uploadReady: true
@@ -37,10 +37,9 @@ export default {
     button: { type: String, default: null },
     firebase: { type: Object, default: null },
     metadata: { type: Object, default: null },
-    rules: {
-      extension: null,
-      size: 0
-    },
+    extension: { type: Array, default: null },
+    minSize: { type: Number, default: 0 },
+    maxSize: { type: Number, default: 0 },
     error: { type: Object, default: null },
   },
   methods: {
@@ -63,14 +62,14 @@ export default {
         }
       } else {
         path = path ? `${path}/${this.data.files[0].name}` : this.data.files[0].name
-        if (CheckExtension(this.data.files[0].name, this.rules.extension)) {
-          this.uploading(this.firebase, path, this.data.files[0], metadata).then(downloadURL => {
-            this.data.download = downloadURL
-            this.data.path = path
-            this.clear()
-          })
-        } else
-          this.error.data = 'type'
+        if (!this.extension.indexOf(this.data.files[0].name) < 0) this.error.data = 'type'
+        if (!this.data.files[0].size < this.minSize) this.error.data = 'min-size'
+        if (!this.data.files[0].size > this.maxSize) this.error.data = 'max-size'
+        this.uploading(this.firebase, path, this.data.files[0], metadata).then(downloadURL => {
+          this.data.download = downloadURL
+          this.data.path = path
+          this.clear()
+        })
         //console.log('error type')
         // storageRef.child(path).put(files[0], metadata).then(function (snapshot) {
         //   console.log('Uploaded file!');
@@ -159,7 +158,7 @@ export default {
   color: #8d8d8d;
 }
 
-.file-upload [type='file'] {
+.file-upload [type="file"] {
   opacity: 0;
   /* invisible but it's there! */
   cursor: pointer;
@@ -192,7 +191,7 @@ export default {
 .v-btn {
   cursor: pointer;
 }
-.btn-upload [type='file'] {
+.btn-upload [type="file"] {
   display: none;
 }
 </style>

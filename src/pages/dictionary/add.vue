@@ -3,26 +3,28 @@
     <!-- <v-btn slot="activator" color="primary" dark class="mb-2">New Item</v-btn> -->
     <v-card>
       <v-card-title>
-        <span class="headline">{{ formTitle }}</span>
+        <span class="headline">
+          {{ $store.state.dictionary.item.id ? 'Edit Item' : 'New Item'}}
+        </span>
       </v-card-title>
       <v-card-text>
         <v-container grid-list-md>
           <v-layout wrap>
             <v-flex xs12 sm8 md8>
-              <v-text-field v-model="item.name" label="Name"></v-text-field>
+              <v-text-field v-model.trim="item.code" label="Code" :rules="[v => !!v || $store.getters.languages('error.required')]"></v-text-field>
             </v-flex>
             <v-flex xs12 sm4 md4>
-              <v-text-field v-model="item.code" label="Code"></v-text-field>
+              <v-text-field v-model.trim="item.code" label="Code"></v-text-field>
             </v-flex>
             <v-flex xs12 sm6 md4>
-              <v-text-field v-model="item.icon" label="Icon"></v-text-field>
+              <v-text-field v-model.trim="item.icon" label="Icon"></v-text-field>
             </v-flex>
             <v-flex xs12 sm6 md4>
-              <v-text-field v-model="item.orders" label="Orders"></v-text-field>
+              <v-text-field v-model.trim="item.orders" label="Orders"></v-text-field>
             </v-flex>
             <v-flex xs12 sm6 md4>
-              <v-switch color="primary" :label="item.flag===1?'Show':'Hide'" :true-value="1" :false-value="0"
-                v-model.number="item.flag"></v-switch>
+              <v-switch color="primary" :label="item.flag===1?'Show':'Hide'" :true-value="1"
+                :false-value="0" v-model.number="item.flag"></v-switch>
             </v-flex>
           </v-layout>
         </v-container>
@@ -52,15 +54,12 @@ export default {
     localDialog: false,
     editedIndex: -1
   }),
-  mounted() {
-    this.$store.dispatch('languages_items/item')
+  created() {
+    this.$store.dispatch('dictionary/item')
   },
   computed: {
-    formTitle() {
-      return this.$store.state.languages.item.id ? 'Edit Item' : 'New Item'
-    },
     item() {
-      var item = this.$store.state.languages.item
+      var item = this.$store.state.dictionary.item
       return item
     }
   },
@@ -68,13 +67,13 @@ export default {
     dialog(val) { this.localDialog = val },
     localDialog(val) {
       this.$emit('handleDialog', val)
-      if (!val) this.$store.dispatch('languages_items/item')
+      if (!val) this.$store.dispatch('dictionary/item')
     }
   },
   methods: {
     handleSave() {
-      if (this.item.id) this.$store.dispatch('languages_items/update')
-      else this.$store.dispatch('languages_items/insert')
+      if (this.item.id) this.$store.dispatch('dictionary/update')
+      else this.$store.dispatch('dictionary/insert')
     }
   }
 }

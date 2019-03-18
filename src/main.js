@@ -6,15 +6,18 @@ import App from './App.vue'
 import $ from 'jquery';
 window.jQuery = $;
 window.$ = $;
-
-// Filters
-import filters from './plugins/filters'
+// Helpers
+import helpers from './plugins/helpers'
 // Mixins
 import mixins from './plugins/mixins'
 // Store
 import store from './store'
 // Router
 import router from './router'
+// Filters
+import filters from './plugins/filters'
+// Directive
+import directive from './plugins/directive'
 // Firebase
 import { FBAuth } from './plugins/firebaseInit.js'
 import VueFirestore from 'vue-firestore'

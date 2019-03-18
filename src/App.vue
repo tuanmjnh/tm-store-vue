@@ -1,8 +1,13 @@
 <template>
   <v-app>
-    <template-snackbar></template-snackbar>
-    <template-main v-if="isAuth"></template-main>
-    <template-auth v-else></template-auth>
+    <div class="mid-center" v-if="$store.state.$loadingApp">
+      <v-progress-circular :size="130" :width="10" color="primary" indeterminate></v-progress-circular>
+    </div>
+    <template v-else>
+      <template-snackbar></template-snackbar>
+      <template-main v-if="authenticated"></template-main>
+      <template-auth v-else></template-auth>
+    </template>
   </v-app>
 </template>
 
@@ -10,6 +15,7 @@
 import snackbar from './components/snackbar'
 import auth from './layouts/vuetify/auth'
 import main from './layouts/vuetify/main'
+import * as storageAuth from './plugins/storage-auth'
 export default {
   name: 'App',
   components: {
@@ -17,17 +23,22 @@ export default {
     'template-main': main,
     'template-auth': auth
   },
-  data: () => ({
-  }),
-  mounted() {
-  },
+  data: () => ({}),
   created() {
+    this.$store.dispatch('auth/setAuthenticated', storageAuth.Authenticated())
   },
   computed: {
-    isAuth() {
-      var x = this.$store.state.$isAuth
-      return x
+    authenticated() {
+      const rs = this.$store.state.auth.authenticated
+      return rs
     }
+  },
+  watch: {
+    //authenticated(val) {
+      //if(this.$route.path === '/auth') 
+      //console.log(this.$route.path)
+      //if (val && this.$route.path === '/auth') this.$router.push('/')
+    //}
   },
   methods: {
   }

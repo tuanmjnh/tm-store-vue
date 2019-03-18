@@ -1,32 +1,27 @@
 import { SET_CATCH, SET_ITEMS, PUSH_ITEMS, UPDATE_ITEMS, REMOVE_ITEMS, SET_ITEM, SET_MESSAGE } from '../mutation-type'
 import { FBStore, timestamp, docChanges } from '@/plugins/firebaseInit'
-const collection = 'lang_items'
+const collection = 'dictionary'
 export default {
   namespaced: true,
   state: {
     items: [],
-    item: {},
-    values :{},
-    group: [],
+    item: {
+      code: 'vi-VN',
+      group: 'global'
+    },
+    selected: [],
+    isGetFirst: true,
     default: {
       code: '',
       group: '',
-      key: '',
-      value: {},
-      created_by: '',
-      created_at: new Date(),
-      updated_by: '',
-      updated_at: null,
-      deleted_by: '',
-      deleted_at: null,
-      flag: 1
+      sub: {}
     }
   },
   getters: {
     getAll(state) {
       return FBStore.collection(collection).get().then(qss => {
         qss.forEach(doc => {
-          var item = doc.data()
+          const item = doc.data()
           item.id = doc.id
           state.items.push(item)
         })
@@ -41,17 +36,17 @@ export default {
     getByFlag: state => flag => {
       return state.items.filter(x => x.flag === flag)
     },
-    getFilter: state => query => {
-      var items = state.items
-      if (query.flag >= 0) {
+    getFilter: state => pagination => {
+      let items = state.items
+      if (pagination.flag >= 0) {
         items = items.filter(function(row) {
-          return row['flag'] == query.flag
+          return row['flag'] == pagination.flag
         })
       }
-      if (query.search) {
+      if (pagination.search) {
         items = items.filter(function(row) {
           return Object.keys(row).some(function(key) {
-            return String(row[key]).toLowerCase().indexOf(query.search) > -1
+            return String(row[key]).toLowerCase().indexOf(pagination.search) > -1
           })
         })
       }
@@ -90,11 +85,11 @@ export default {
       })
     },
     select({ commit, state }) {
-      var first = FBStore.collection(collection).orderBy('created_at', 'asc')
-      var x = first.get().then(query => {
-        var items = []
-        query.forEach(function(doc) {
-          var item = state.default
+      const first = FBStore.collection(collection).orderBy('created_at', 'asc')
+      const x = first.get().then(pagination => {
+        const items = []
+        pagination.forEach(function(doc) {
+          let item = state.default
           item = doc.data()
           item.id = doc.id
           items.push(item)
@@ -103,7 +98,7 @@ export default {
       })
     },
     async insert({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       item.created_by = 'Admin'
       item.created_at = timestamp
       return FBStore.collection(collection)
@@ -117,7 +112,7 @@ export default {
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     update({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       item.updated_by = 'Admin'
       item.updated_at = timestamp
       FBStore.collection(collection).doc(item.id).set(item)
@@ -128,7 +123,7 @@ export default {
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     delete({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       item.deleted_by = 'Admin'
       item.deleted_at = timestamp
       FBStore.collection(collection).doc(item.id)
@@ -142,7 +137,7 @@ export default {
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     remove({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       FBStore.collection(collection).doc(item.id).delete()
         .then(docRef => {
           commit(REMOVE_ITEMS, item)

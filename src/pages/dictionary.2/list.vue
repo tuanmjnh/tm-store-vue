@@ -2,7 +2,7 @@
   <div>
     <v-card>
       <v-card-title>
-        <v-text-field v-model="pagination.search" append-icon="search" :label="$store.state.lang_items.items.search"
+        <v-text-field v-model="pagination.search" append-icon="search" :label="$store.state.dictionary.items.search"
           single-line hide-details></v-text-field>
         <v-spacer></v-spacer>
         <v-tooltip bottom>
@@ -33,6 +33,7 @@
       </v-card-title>
       <v-data-table class="elevation-1" v-model="selected" select-all item-key="id"
         :headers="headers" :items="items" :rows-per-page-items="rowPerPage"
+        :rows-per-page-text="$store.getters.languages('global.rows_per_page')"
         :pagination.sync="pagination" :search="pagination.search">
         <template slot="items" slot-scope="props">
           <tr>
@@ -102,7 +103,7 @@ export default {
     localDialog: false,
     confirmDialog: false,
     pagination: { search: '', sortBy: 'key', flag: 1 },
-    rowPerPage: [5, 10, 25, 50, 100, { text: "All", value: -1 }],
+    rowPerPage: [10, 25, 50, 100, { text: "All", value: -1 }],
     headers: [
       // { text: 'ID', value: 'id', align: 'left' },
       { text: 'Key', value: 'key', align: 'left' },
@@ -111,11 +112,11 @@ export default {
     ]
   }),
   mounted() {
-    this.$store.dispatch('lang_items/init')
+    this.$store.dispatch('dictionary/init')
   },
   computed: {
     items() {
-      var rs = this.$store.getters['lang_items/getFilter'](this.pagination)
+      var rs = this.$store.getters['dictionary/getFilter'](this.pagination)
       return rs
     }
   },
@@ -123,26 +124,26 @@ export default {
     dialog(val) { this.localDialog = val },
     localDialog(val) {
       this.$emit('handleDialog', val)
-      if (!val) this.$store.dispatch('lang_items/item')
+      if (!val) this.$store.dispatch('dictionary/item')
     },
   },
   methods: {
     onEdit(item) {
-      this.$store.dispatch('lang_items/item', item)
-      this.$store.dispatch('lang_items/values', item.value)
+      this.$store.dispatch('dictionary/item', item)
+      this.$store.dispatch('dictionary/values', item.value)
       this.localDialog = true
     },
     onDelete(item) {
       this.confirmDialog = true
-      this.$store.dispatch('lang_items/item', item)
+      this.$store.dispatch('dictionary/item', item)
     },
     onConfirm() {
       this.confirmDialog = false
-      this.$store.dispatch('lang_items/delete')
+      this.$store.dispatch('dictionary/delete')
     }
   },
   // created() {
-  //   console.log(this.$store.state.lang_items.items)
+  //   console.log(this.$store.state.dictionary.items)
   // }
 }
 </script>

@@ -33,13 +33,14 @@
             <v-list-tile slot="activator">
               <v-list-tile-title v-text="item.title"></v-list-tile-title>
             </v-list-tile>
-            <v-list-tile v-if="item.children" v-for="(children, ii) in item.children"
-              :key="ii" @click="MenuAction(children)">
-              <v-list-tile-title v-text="children.title"></v-list-tile-title>
-              <v-list-tile-action>
-                <v-icon v-text="children.icon"></v-icon>
-              </v-list-tile-action>
-            </v-list-tile>
+            <template v-if="item.children">
+              <v-list-tile v-for="(children, ii) in item.children" :key="ii" @click="MenuAction(children)">
+                <v-list-tile-title v-text="children.title"></v-list-tile-title>
+                <v-list-tile-action>
+                  <v-icon v-text="children.icon"></v-icon>
+                </v-list-tile-action>
+              </v-list-tile>
+            </template>
           </v-list-group>
         </template>
       </v-list>
@@ -98,7 +99,7 @@
               <v-list-tile-title>Setting</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
-          <v-list-tile @click="Logout">
+          <v-list-tile @click="signOut">
             <v-list-tile-action>
               <i class="material-icons">exit_to_app</i>
             </v-list-tile-action>
@@ -126,13 +127,13 @@
       </v-list>
     </v-navigation-drawer>
     <v-footer :fixed="fixed" app>
-      <span>&copy; 2017</span>
+      <span>&copy; 2019</span>
     </v-footer>
   </div>
 </template>
 
 <script>
-import { FBAuth } from "@/plugins/firebaseInit.js";
+import { FBAuth } from "@/plugins/firebaseInit.js"
 export default {
   // name: 'vuetify',
   components: {
@@ -162,6 +163,7 @@ export default {
         push: 'languages',
         children: [
           { icon: 'outlined_flag', title: 'languages', push: 'languages' },
+          { icon: 'font_download', title: 'dictionary', push: 'dictionary' },
           { icon: 'local_library', title: 'Informations', push: 'informations' }
         ]
       }],
@@ -180,24 +182,24 @@ export default {
   },
   methods: {
     MenuAction(item) {
-      if (item.store) this.$store.commit(item.store);
-      if (item.go) this.$router.go('/' + item.go);
-      else this.$router.push('/' + item.push);
+      if (item.store) this.$store.commit(item.store)
+      if (item.go) this.$router.go('/' + item.go)
+      else this.$router.push('/' + item.push)
     },
-    Logout() {
-      var $this = this
-      FBAuth.signOut().then(function () {
-        $this.$store.state.$isAuth = false
-        $this.$router.push("/auth");
-      }, function (error) {
-        $this.$store.dispatch('message', { text: error.message, color: 'error' })
-      });
+    signOut() {
+      this.$store.dispatch('auth/signOut', true).then(this.$router.push('/auth'))
+      // var $this = this
+      // FBAuth.signOut().then(function () {
+      //   $this.$store.state.$isAuth = false
+      //   $this.$router.push("/auth")
+      // }, function (error) {
+      //   $this.$store.dispatch('message', { text: error.message, color: 'error' })
+      // })
     },
     ShowSnackbar() {
       this.$store.state._message.show = true
       this.$store.state._message.text = 'Message'
       var a = this.$store.state._message.show
-
       // console.log(a)
     }
   },
@@ -207,5 +209,5 @@ export default {
 }
 </script>
 <style lang="scss">
-@import '@/assets/scss/vuetify.scss';
+@import "@/assets/scss/vuetify.scss"
 </style>

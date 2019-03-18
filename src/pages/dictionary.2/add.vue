@@ -3,7 +3,9 @@
     <!-- <v-btn slot="activator" color="primary" dark class="mb-2">New Item</v-btn> -->
     <v-card>
       <v-card-title>
-        <span class="headline">{{ formTitle }}</span>
+        <span class="headline">
+          {{ $store.state.dictionary.item.id ? 'Edit Item' : 'New Item' }}
+        </span>
       </v-card-title>
       <v-card-text>
         <v-container grid-list-md>
@@ -84,19 +86,16 @@ export default {
       value: ''
     }
   }),
-  mounted() {
-    this.$store.dispatch('lang_items/item')
+  created() {
+    this.$store.dispatch('dictionary/item')
   },
   computed: {
-    formTitle() {
-      return this.$store.state.lang_items.item.id ? 'Edit Item' : 'New Item'
-    },
     item() {
-      var item = this.$store.state.lang_items.item
+      var item = this.$store.state.dictionary.item
       return item
     },
     values() {
-      var item = this.$store.state.lang_items.values
+      var item = this.$store.state.dictionary.values
       return item
     }
   },
@@ -104,7 +103,7 @@ export default {
     dialog(val) { this.localDialog = val },
     localDialog(val) {
       this.$emit('handleDialog', val)
-      if (!val) this.$store.dispatch('lang_items/item')
+      if (!val) this.$store.dispatch('dictionary/item')
     }
   },
   methods: {
@@ -114,8 +113,8 @@ export default {
       // this.item.value[key] = this.formData.value
       // console.log(this.item.value)
       this.item.value = this.values
-      if (this.item.id) this.$store.dispatch('lang_items/update')
-      else this.$store.dispatch('lang_items/insert')
+      if (this.item.id) this.$store.dispatch('dictionary/update')
+      else this.$store.dispatch('dictionary/insert')
     },
     onCheck() {
       console.log(this.item.value)

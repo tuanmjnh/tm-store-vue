@@ -3,6 +3,8 @@ import 'firebase/auth'
 import 'firebase/storage'
 import 'firebase/firestore'
 import 'firebase/database'
+import 'firebase/messaging'
+import 'firebase/functions'
 // Initialize Firebase
 var config = {
   apiKey: "AIzaSyAwMnmy7tyvDjIt283Tnp1-u9T7OubwDhs",
@@ -13,16 +15,12 @@ var config = {
   messagingSenderId: "45492650401"
 }
 if (!firebase.apps.length) firebase.initializeApp(config)
-const settings = {
-  timestampsInSnapshots: true
-} // your settings...
 export const GoogleProvider = new firebase.auth.GoogleAuthProvider()
 export const FBAuth = firebase.auth()
 export const FBStorage = firebase.storage()
 export const FBDB = firebase.database()
 export const FBStore = firebase.firestore()
 export const timestamp = firebase.firestore.FieldValue.serverTimestamp()
-FBStore.settings(settings)
 // export const FBMessaging = firebase.messaging()
 // export const FBFuntions = firebase.functions()
 // Functions

@@ -45,8 +45,9 @@
           </v-tooltip>
         </v-btn-toggle> -->
       </v-card-title>
-      <v-data-table class="elevation-1" v-model="selected" select-all item-key="id"
+      <v-data-table class="elevation-1" v-model="$store.state.languages.selected" select-all item-key="id"
         :headers="headers" :items="items" :rows-per-page-items="rowPerPage"
+        :rows-per-page-text="$store.getters.languages('global.rows_per_page')"
         :pagination.sync="pagination" :search="pagination.search">
         <!--:loading="loading" :pagination.sync="pagination" :total-items="totalItems" -->
         <template slot="items" slot-scope="props">
@@ -91,7 +92,9 @@
         </template>
       </v-data-table>
     </v-card>
-    <tpl-confirm :dialog="confirmDialog" @ok="onConfirm"></tpl-confirm>
+    <tpl-confirm :dialog="confirmDialog" @onAccept="onCFMAccept" @onCancel="onCFMCancel"
+      :title="$store.getters.languages('global.message')" :content="$store.getters.languages('messages.confirm_content')"
+      :btnAcceptText="$store.getters.languages('global.accept')" :btnCancelText="$store.getters.languages('global.cancel')"></tpl-confirm>
   </div>
 </template>
 
@@ -105,7 +108,6 @@ export default {
   },
   data: () => ({
     loading: true,
-    selected: [],
     // totalItems: 0,
     // items: [],
     toggle_one: 0,
@@ -113,7 +115,7 @@ export default {
     // localItemsDialog: false,
     confirmDialog: false,
     // query: { search: '', sort: 'orders', direction: 'asc', flag: 1 },
-    pagination: { search: '', sortBy: 'orders', flag: 1 },
+    pagination: { search: '', sortBy: 'orders', find: { flag: 1 } },
     rowPerPage: [5, 10, 25, 50, 100, { text: "All", value: -1 }],
     headers: [
       // { text: 'ID', value: 'id', align: 'left' },
@@ -173,10 +175,9 @@ export default {
     // }
   },
   methods: {
-    handleList(flag) { },
     onItems(item) {
-      this.$router.push('/lang-items/' + item.code);
-      // this.localItemsDialog = !this.localItemsDialog
+      this.$store.dispatch('languages/item', item)
+      this.localItemsDialog = !this.localItemsDialog
     },
     onEdit(item) {
       this.$store.dispatch('languages/item', item)
@@ -184,13 +185,13 @@ export default {
     },
     onDelete(item) {
       this.confirmDialog = !this.confirmDialog
-      this.$store.dispatch('languages/item', item)
-      // console.log(this.$store.state.languages.item)
-      // const index = this.desserts.indexOf(item)
-      // confirm('Are you sure you want to delete this item?') && this.desserts.splice(index, 1)
+      this.$store.state.languages.selected.push(item);
     },
-    onConfirm() {
+    onCFMAccept() {
       this.$store.dispatch('languages/delete')
+    },
+    onCFMCancel() {
+      this.$store.state.languages.selected = []
     }
   }
 }

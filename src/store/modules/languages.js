@@ -6,6 +6,8 @@ export default {
   state: {
     items: [],
     item: {},
+    selected: [],
+    isGetFirst: true,
     cll: FBStore.collection(collection),
     default: {
       name: '',
@@ -28,7 +30,7 @@ export default {
     getAll(state) {
       return FBStore.collection(collection).get().then(qss => {
         qss.forEach(doc => {
-          var item = doc.data()
+          const item = doc.data()
           item.id = doc.id
           state.items.push(item)
         })
@@ -43,29 +45,8 @@ export default {
     getByFlag: state => flag => {
       return state.items.filter(x => x.flag === flag)
     },
-    getFilter: state => query => {
-      var items = state.items
-      if (query.flag >= 0) {
-        items = items.filter(function(row) {
-          return row['flag'] == query.flag
-        })
-      }
-      // if (query.search) {
-      //   items = items.filter(function(row) {
-      //     return Object.keys(row).some(function(key) {
-      //       return String(row[key]).toLowerCase().indexOf(query.search) > -1
-      //     })
-      //   })
-      // }
-      // if (query.sort) {
-      //   var order = query.direction === 'asc' ? -1 : 1
-      //   items = items.slice().sort(function (a, b) {
-      //     a = a[query.sort]
-      //     b = b[query.sort]
-      //     return (a === b ? 0 : a > b ? 1 : -1) * order
-      //   })
-      // }
-      return items
+    getFilter: state => pagination => {
+      return state.items.filterValue(pagination.find)
     }
   },
   mutations: {
@@ -97,12 +78,12 @@ export default {
       })
     },
     // select({ commit, state }) {
-    //   return FBStore.collection(collection).get().then(function(querySnapshot) {
-    //     var items = []
-    //     querySnapshot.forEach(function(doc) {
-    //       // doc.data() is never undefined for query doc snapshots
+    //   return FBStore.collection(collection).get().then(function(paginationSnapshot) {
+    //     const items = []
+    //     paginationSnapshot.forEach(function(doc) {
+    //       // doc.data() is never undefined for pagination doc snapshots
     //       // console.log(doc.id, ' => ', doc.data())
-    //       var item = state.default
+    //       const item = state.default
     //       item = doc.data()
     //       item.id = doc.id
     //       items.push(item)
@@ -111,8 +92,8 @@ export default {
     //   }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
     // },
     pagination({ commit, state }, { search, pagination }) {
-      var items = []
-      var obj = {
+      const items = []
+      const obj = {
         search: [],
         orderBy: [],
         limit: 5
@@ -136,9 +117,9 @@ export default {
         .where(obj.search[0], obj.search[1], obj.search[2])
         .orderBy(obj.orderBy[0], obj.orderBy[1])
         .limit(obj.limit)
-        .get().then(query => {
-          query.forEach(function(doc) {
-            var item = state.default
+        .get().then(pagination => {
+          pagination.forEach(function(doc) {
+            let item = state.default
             item = doc.data()
             item.id = doc.id
             items.push(item)
@@ -148,9 +129,9 @@ export default {
         state.cll
         .orderBy(obj.orderBy[0], obj.orderBy[1])
         .limit(obj.limit)
-        .get().then(query => {
-          query.forEach(function(doc) {
-            var item = state.default
+        .get().then(pagination => {
+          pagination.forEach(function(doc) {
+            let item = state.default
             item = doc.data()
             item.id = doc.id
             items.push(item)
@@ -159,36 +140,36 @@ export default {
       commit(SET_ITEMS, items)
     },
     select({ commit, state }) {
-      var first = FBStore.collection(collection).orderBy('created_at', 'asc')
-      var x = first.get().then(query => {
-        var items = []
-        query.forEach(function(doc) {
-          // doc.data() is never undefined for query doc snapshots
+      const first = FBStore.collection(collection).orderBy('created_at', 'asc')
+      const x = first.get().then(pagination => {
+        const items = []
+        pagination.forEach(function(doc) {
+          // doc.data() is never undefined for pagination doc snapshots
           // console.log(doc.id, ' => ', doc.data())
-          var item = state.default
+          let item = state.default
           item = doc.data()
           item.id = doc.id
           items.push(item)
         })
         commit(SET_ITEMS, items)
       })
-      // first.get().then(querySnapshot => {
+      // first.get().then(paginationSnapshot => {
       //   // Get the last visible document
-      //   var lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1]
+      //   const lastVisible = paginationSnapshot.docs[paginationSnapshot.docs.length - 1]
       //   // console.log('last', lastVisible);
-      //   // Construct a new query starting at this document,
+      //   // Construct a new pagination starting at this document,
       //   // get the next 5 cities.
-      //   var next = FBStore.collection(collection)
+      //   const next = FBStore.collection(collection)
       //     .orderBy('name', 'asc')
       //     .startAfter(lastVisible)
       //     .limit(5)
       //   // console.log(next)
-      //   next.get().then(query => {
-      //     var items = []
-      //     query.forEach(function(doc) {
-      //       // doc.data() is never undefined for query doc snapshots
+      //   next.get().then(pagination => {
+      //     const items = []
+      //     pagination.forEach(function(doc) {
+      //       // doc.data() is never undefined for pagination doc snapshots
       //       // console.log(doc.id, ' => ', doc.data())
-      //       var item = state.default
+      //       const item = state.default
       //       item = doc.data()
       //       item.id = doc.id
       //       items.push(item)
@@ -199,7 +180,7 @@ export default {
       // }).catch(function(error) { commit(SET_CATCH, error, { root: true }) })
     },
     async insert({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       // item.created = { by: 'Admin', at: new Date() }
       // items.push(state.item)
       // for (let index = 0; index < 1000; index++) {
@@ -218,7 +199,7 @@ export default {
       // }
     },
     update({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       item.updated_by = 'Admin'
       item.updated_at = timestamp
       FBStore.collection(collection).doc(item.id).set(item)
@@ -229,7 +210,7 @@ export default {
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     delete({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       item.deleted_by = 'Admin'
       item.deleted_at = timestamp
       FBStore.collection(collection).doc(item.id)
@@ -243,7 +224,7 @@ export default {
         .catch(error => { commit(SET_CATCH, error, { root: true }) })
     },
     remove({ commit, state }) {
-      var item = Object.assign({}, state.item)
+      const item = Object.assign({}, state.item)
       FBStore.collection(collection).doc(item.id).delete()
         .then(docRef => {
           commit(REMOVE_ITEMS, item)
