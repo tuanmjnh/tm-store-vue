@@ -35,12 +35,12 @@ export default {
       // http
       FBAuth.signInWithEmailAndPassword(state.item.username, state.item.password)
         .then(rs => {
-          state.user.uid = rs.user.uid
-          state.user.token = rs.user.refreshToken
-          state.user.remember = state.item.remember
-          storageAuth.signIn(state.user)
+          rootState.$user.uid = rs.user.uid
+          rootState.$user.token = rs.user.refreshToken
+          rootState.$user.remember = state.item.remember
+          rootState.$user.username = state.item.username
+          storageAuth.signIn(rootState.$user)
           commit('SET_AUTHENTICAION', true)
-
         })
         .catch(function(error) { commit(SET_CATCH, error, { root: true }) })
         .finally(() => { setTimeout(() => { rootState.$loadingApp = false }, 200) })
@@ -57,9 +57,10 @@ export default {
         .catch(function(error) { commit(SET_CATCH, error, { root: true }) })
         .finally(() => { setTimeout(() => { rootState.$loadingApp = false }, 200) })
     },
-    async setAuthenticated({ commit }, val = false) {
+    async setAuthenticated({ commit, rootState }, val = false) {
       commit('SET_AUTHENTICAION', val)
-      commit('SET_USER', storageAuth.GetStorage())
+      //commit('SET_USER', storageAuth.GetStorage())
+      rootState.$user = storageAuth.GetStorage() || null
     },
     async item({ commit }, item = null) {
       commit('SET_ITEM', item)

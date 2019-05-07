@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { SET_MESSAGE, SET_CATCH } from './mutation-type'
 import * as storageLanguages from '@/plugins/languages'
 //
 // import state from './state'
@@ -21,13 +20,25 @@ export default new Vuex.Store({
     dictionary
   },
   state: {
+    $user: {},
     $loadingApp: false,
     $loading: false,
     $noimage: `Uploads/noimage.jpg`,
-    $message: { show: false },
     $language_def: 'vi-VN',
     $language: 'vi-VN', //_languages.GetLanguage(),
-    $dictionary: [] //_languages.GetLanguages(),
+    $dictionary: [], //_languages.GetLanguages(),
+    $row_per_page: [10, 25, 50, 100, 200, 500], //  { text: "All", value: -1 }
+    $message: {
+      mode: '',
+      x: 'right',
+      y: 'top',
+      timeout: 6000,
+      show: false,
+      color: 'success',
+      text: '',
+      status: '',
+      statusText: ''
+    },
   }, // State
   getters: {
     languages: state => key => {
@@ -52,80 +63,50 @@ export default new Vuex.Store({
       return rs
     }
   }, // = computed properties
+  mutations: {
+    SET_MESSAGE(state, res) {
+      state.$message.text = res.text || ''
+      state.$message.show = true
+    },
+    SET_CATCH(state, error) {
+      if (error.response.status === 401) {
+        this.dispatch('auth/logout')
+        state.$message.text = state.$dictionary.auth && state.$dictionary.auth.msg_err_expired ?
+          state.$dictionary.auth.msg_err_expired : error.response.statusText
+      }
+      else { // error.response
+        state.$message.text = state.$dictionary.error && state.$dictionary.error.connection ?
+          state.$dictionary.error.connection : error.message
+        console.log(error)
+      }
+      state.$message.color = 'danger'
+      state.$message.show = true
+    },
+    SET_LANG(state, $lang) {
+      state.$lang = $lang
+    },
+    PUSH_LANG(state, $lang) {
+      state.$lang.push($lang)
+    },
+    UPDATE_LANG(state, $lang) {
+      const index = state.$lang.findIndex(x => x.id === $lang.id)
+      state.$lang.splice(index, 1, $lang)
+    },
+    REMOVE_LANG(state, $lang) {
+      const index = state.$lang.findIndex(x => x.id === $lang.id)
+      if (index >= 0) state.$lang.splice(index, 1)
+    }
+  },// Mutations
   actions: {
-    message({ commit }, data) { commit(SET_MESSAGE, data) },
+    message({ commit }, data) { commit('SET_MESSAGE', data) },
     messageClose({ state }, data) { state.$message.show = data },
     async setLanguage({ commit, state }) {
       state.$loadingApp = true
     },
-  }, // Actions
-  mutations: {
-    [SET_MESSAGE](state, res) {
-      state.$message = {
-        mode: '',
-        x: 'right',
-        y: 'top',
-        show: res.text ? true : false,
-        timeout: 6000,
-        color: res.color || 'success',
-        text: res.text || '',
-        status: res.status || 0,
-        statusText: res.statusText || 'Error'
-      }
-    },
-    [SET_CATCH](state, error) {
-      if (!error.response) {
-        console.log(error)
-        return
-      }
-      if (error.response.status === 401) {
-        this.dispatch('auth/logout')
-        let text = state.$dictionary.auth && state.$dictionary.auth.msg_err_expired ?
-          state.$dictionary.auth.msg_err_expired :
-          error.response ? error.response.statusText : error
-        state.$message = {
-          mode: '',
-          x: 'right',
-          y: 'top',
-          timeout: 6000,
-          show: true,
-          color: 'danger',
-          text: text,
-          status: error.response ? error.response.status : 0,
-          statusText: error.response ? error.response.statusText : error
-        }
-      } else {
-        let text = state.$dictionary.messages && state.$dictionary.messages.err_connection ?
-          state.$dictionary.messages.err_connection :
-          error.response ? error.response.statusText : error
-        state.$message = {
-          mode: '',
-          x: 'right',
-          y: 'top',
-          timeout: 6000,
-          show: true,
-          color: 'danger',
-          text: text,
-          status: error.response ? error.response.status : 0,
-          statusText: error.response ? error.response.statusText : error
-        }
-      }
-    },
-    ['SET_LANG'](state, $lang) {
-      state.$lang = $lang
-    },
-    ['PUSH_LANG'](state, $lang) {
-      state.$lang.push($lang)
-    },
-    ['UPDATE_LANG'](state, $lang) {
-      const index = state.$lang.findIndex(x => x.id === $lang.id)
-      state.$lang.splice(index, 1, $lang)
-    },
-    ['REMOVE_LANG'](state, $lang) {
-      const index = state.$lang.findIndex(x => x.id === $lang.id)
-      if (index >= 0) state.$lang.splice(index, 1)
+    notification({ state }) {
+      state.$notification = !state.$notification
     }
-  } // Mutations
+  } // Actions
 })
 
 

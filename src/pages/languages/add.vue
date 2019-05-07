@@ -1,9 +1,9 @@
 <template>
-  <v-dialog v-model="localDialog" max-width="1024px">
+  <v-dialog v-model="$store.state.languages.dialog" :persistent="loading" max-width="1024px">
     <!-- <v-btn slot="activator" color="primary" dark class="mb-2">New Item</v-btn> -->
     <v-card>
-      <v-card-title>
-        <span class="headline">{{ formTitle }}</span>
+      <v-card-title class="headline grey lighten-2">
+        <span>{{ item.id ?$store.getters.languages('global.details'):$store.getters.languages('global.add') }}</span>
       </v-card-title>
       <v-card-text>
         <v-form v-model="valid" ref="form">
@@ -13,16 +13,19 @@
                 <v-text-field v-model="item.name" label="Name" :rules="[v => !!v || $store.getters.languages('error.required')]"></v-text-field>
               </v-flex>
               <v-flex xs12 sm4 md4>
-                <v-text-field v-model="item.code" label="Code"></v-text-field>
+                <v-text-field v-model.trim="item.code" class="text-color-initial" :disabled="item.id?true:false"
+                  :label="$store.getters.languages('global.code')" :rules="[v => !!v  || $store.getters.languages('error.required'), !exist_code||$store.getters.languages('error.exist')]"></v-text-field>
               </v-flex>
-              <v-flex xs12 sm6 md4>
-                <v-text-field v-model="item.icon" label="Icon"></v-text-field>
+              <v-flex xs12 sm6 md6 class="text-append-icon">
+                <v-text-field v-model.trim="item.icon" label="Icon"></v-text-field>
+                <div class="icon" v-html="item.icon"></div>
               </v-flex>
-              <v-flex xs12 sm6 md4>
-                <v-text-field v-model="item.orders" label="Orders"></v-text-field>
+              <v-flex xs6 sm3 md3>
+                <v-text-field type="number" v-model.trim="item.orders" :label="$store.getters.languages('global.orders')"
+                  :rules="[v => !!v  || $store.getters.languages('error.required')]"></v-text-field>
               </v-flex>
-              <v-flex xs12 sm6 md4>
-                <v-switch color="primary" :label="item.flag===1?'Show':'Hide'"
+              <v-flex xs6 sm3 md3>
+                <v-switch color="primary" :label="item.flag===1?$store.getters.languages('global.use'):$store.getters.languages('global.draft')"
                   :true-value="1" :false-value="0" v-model.number="item.flag"></v-switch>
               </v-flex>
               <v-flex xs12 sm12 md12>
@@ -34,30 +37,24 @@
                 <div class="dflex">
                   <a v-if="item.attach" class="white--text v-btn v-btn--outline v-btn--depressed blue-grey--text m-0"
                     :href="item.attach" target="_blank"><i class="material-icons">attach_file</i>
-                    {{item.attach|pathToFileName}}</a>
+                    {{item.attach}}</a>
                   <v-spacer></v-spacer>
-                  <uploadFirestoreFiles :multiple="false" button="Upload" :firebase="firebase"
-                    path="languages" :rules="{extension:'.json'}" :data="uploadData"
-                    :error="uploadError"></uploadFirestoreFiles>
+                  <uploadFirestoreFiles :multiple="false" button="Upload" :firebase="firebase" path="languages"
+                    :rules="{extension:'.json'}" :data="upload_data" :error="upload_error"></uploadFirestoreFiles>
                 </div>
               </v-flex>
             </v-layout>
           </v-container>
         </v-form>
       </v-card-text>
+      <v-divider></v-divider>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn color="primary" flat @click.native="onCheck">
-          <!-- <i class="material-icons">check</i> -->
-          Check
+        <v-btn color="primary" flat @click.native="onSave" :disabled="!valid" :loading="loading">
+          {{$store.getters.languages('global.update')}}
         </v-btn>
-        <v-btn color="primary" flat @click.native="onSave">
-          <!-- <i class="material-icons">check</i> -->
-          Update
-        </v-btn>
-        <v-btn color="secondary" flat @click.native="localDialog=false">
-          <!-- <i class="material-icons">close</i>  -->
-          Cancel
+        <v-btn color="secondary" flat @click.native="$store.state.languages.dialog=false" :disabled="loading">
+          {{$store.getters.languages('global.back')}}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -73,41 +70,45 @@ import firebase from '@/plugins/firebaseInit'
 import uploadFirestoreFiles from '@/components/upload-firestore-files'
 export default {
   components: { quillEditor, uploadFirestoreFiles },
-  props: {
-    dialog: { type: Boolean, default: false }
-  },
   data: () => ({
+    loading: false,
     valid: false,
-    localDialog: false,
-    editedIndex: -1,
+    exist_code: false,
     firebase: firebase,
-    uploadData: {},
-    uploadError: {},
+    upload_data: {},
+    upload_error: {},
   }),
-  mounted() {
+  created() {
     this.$store.dispatch('languages/item')
   },
   computed: {
-    formTitle() {
-      return this.$store.state.languages.item.id ? 'Edit Item' : 'New Item'
-    },
     item() {
-      var item = this.$store.state.languages.item
-      return item
+      var rs = this.$store.state.languages.item
+      return rs
+    },
+    dialog() {
+      var rs = this.$store.state.languages.dialog
+      return rs
     }
   },
   watch: {
-    dialog(val) { this.localDialog = val },
-    localDialog(val) {
-      this.$emit('handleDialog', val)
+    dialog(val) {
       if (!val) this.$store.dispatch('languages/item')
+      this.$refs.form.resetValidation()
     },
-    uploadData: {
+    item: {
+      handler(val) {
+        //if (this.item.attach) this.item.attach = this.item.attach.replace('Languages/', '')
+        if (this.item.code && !this.item.id) this.$store.dispatch('languages/exist_code').then((rs) => { this.exist_code = rs })
+      },
+      deep: true
+    },
+    upload_data: {
       handler(val) {
         console.log(val.data)
       }, deep: true
     },
-    uploadError: {
+    upload_error: {
       handler(val) {
         console.log(val)
       }, deep: true
@@ -115,13 +116,13 @@ export default {
   },
   methods: {
     onSave() {
-      this.item.attach = this.uploadData.path
-      if (this.item.id) this.$store.dispatch('languages/update')
-      else this.$store.dispatch('languages/insert')
-    },
-    onCheck() {
-      var a = Object
-      return a
+      this.loading = true
+      this.item.attach = this.upload_data.path ? this.upload_data.path : ''
+      if (this.item.id) this.$store.dispatch('languages/update').then(this.loading = false)
+      else this.$store.dispatch('languages/insert').then(() => {
+        this.loading = false
+        this.$refs.form.resetValidation()
+      })
     }
   }
 }
