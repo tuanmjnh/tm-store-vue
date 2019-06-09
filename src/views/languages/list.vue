@@ -141,10 +141,10 @@ export default {
   // mounted() {
   //   this.$store.dispatch('languages/init')
   // },
-  created() {
-    this.headers.forEach(e => { e.text = this.$store.getters.languages(e.text) });
-    if (this.$store.state.languages.isGetFirst) this.$store.dispatch('languages/select', true)
-  },
+  // created() {
+  //   this.headers.forEach(e => { e.text = this.$store.getters.languages(e.text) });
+  //   if (this.$store.state.languages.isGetFirst) this.$store.dispatch('languages/select', true)
+  // },
   computed: {
     items() {
       var rs = this.$store.getters['languages/getFilter'](this.pagination)

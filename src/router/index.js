@@ -5,55 +5,55 @@ import VueRouter from 'vue-router'
 const routes = [{
     path: '/login',
     name: 'login',
-    component: () => import('../pages/auth/index')
+    component: () => import('../views/auth/index')
   },
   {
     path: '/dashboard',
     name: 'dashboard',
     alias: '',
     meta: { description: 'Overview of environment', requiresAuth: true },
-    component: () => import('../pages/dashboard/index')
+    component: () => import('../views/dashboard/index')
   },
   {
     path: '/users',
     name: 'users',
     alias: '',
-    component: () => import('../pages/users/index'),
+    component: () => import('../views/users/index'),
     meta: { description: 'Overview of environment', requiresAuth: true }
   },
   {
     path: '/roles',
     name: 'roles',
     alias: '',
-    component: () => import('../pages/roles/index'),
+    component: () => import('../views/roles/index'),
     meta: { description: 'Overview of environment', requiresAuth: true }
   },
   {
     path: '/modules',
     name: 'modules',
     alias: '',
-    component: () => import('../pages/modules/index'),
+    component: () => import('../views/modules/index'),
     meta: { description: 'Overview of environment', requiresAuth: true }
   },
   {
     path: '/languages',
     name: 'languages',
     alias: '',
-    component: () => import('../pages/languages/index'),
+    component: () => import('../views/languages/index'),
     meta: { description: 'Overview of environment', requiresAuth: true }
   },
   {
     path: '/dictionary/:lang?',
     name: 'dictionary',
     alias: '',
-    component: () => import('../pages/dictionary/index'),
+    component: () => import('../views/dictionary/index'),
     meta: { description: 'Overview of environment', requiresAuth: true }
   },
   {
     path: '/informations',
     name: 'informations',
     alias: '',
-    component: () => import('../pages/informations/index'),
+    component: () => import('../views/informations/index'),
     meta: { description: 'Overview of environment', requiresAuth: true }
   },
   // {
@@ -61,19 +61,19 @@ const routes = [{
   //   name: 'languages',
   //   alias: '',
   //   redirect: { name: 'languages-list' },
-  //   component: () => import ('../pages/languages/index'),
+  //   component: () => import ('../views/languages/index'),
   //   meta: { description: 'Overview of environment', requiresAuth: true },
   //   children: [{
   //       path: 'list',
   //       name: 'languages-list',
   //       props: true,
-  //       component: () => import ('../pages/languages/list')
+  //       component: () => import ('../views/languages/list')
   //     },
   //     {
   //       path: 'add',
   //       name: 'languages-add',
   //       props: true,
-  //       component: () => import ('../pages/languages/add')
+  //       component: () => import ('../views/languages/add')
   //     }
   //   ]
   // },
@@ -88,14 +88,14 @@ const routes = [{
     path: '/auth',
     name: 'authentication',
     alias: '',
-    component: () => import('../pages/dashboard/index'),
+    component: () => import('../views/dashboard/index'),
     meta: { description: 'Overview of environment', requiresAuth: true }
   },
   {
     // not found handler
     path: '*',
     component: () =>
-      import('../pages/not-found/index')
+      import('../views/not-found/index')
   }
 ]
 Vue.use(VueRouter)

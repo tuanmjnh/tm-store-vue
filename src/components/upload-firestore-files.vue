@@ -1,7 +1,7 @@
 <template>
   <div class="file-upload">
-    <input v-if="uploadReady" type="file" id="file-upload" :multiple="multiple===true?true:false"
-      :accept="extension" @change="onChange($event)" />
+    <input v-if="uploadReady" type="file" id="file-upload" :multiple="multiple===true?true:false" :accept="rules.extension"
+      @change="onChange($event)" />
     <div v-if="button">
       <div class="btn-upload">
         <v-tooltip bottom>
@@ -37,9 +37,10 @@ export default {
     button: { type: String, default: null },
     firebase: { type: Object, default: null },
     metadata: { type: Object, default: null },
-    extension: { type: Array, default: null },
-    minSize: { type: Number, default: 0 },
-    maxSize: { type: Number, default: 0 },
+    rules: {
+      extension: null,
+      size: 0
+    },
     error: { type: Object, default: null },
   },
   methods: {
@@ -62,14 +63,15 @@ export default {
         }
       } else {
         path = path ? `${path}/${this.data.files[0].name}` : this.data.files[0].name
-        if (!this.extension.indexOf(this.data.files[0].name) < 0) this.error.data = 'type'
-        if (!this.data.files[0].size < this.minSize) this.error.data = 'min-size'
-        if (!this.data.files[0].size > this.maxSize) this.error.data = 'max-size'
+        //if (CheckExtension(this.data.files[0].name, this.rules.extension)) {
         this.uploading(this.firebase, path, this.data.files[0], metadata).then(downloadURL => {
           this.data.download = downloadURL
           this.data.path = path
           this.clear()
         })
+        //} else
+        //  this.error.data = 'type'
+
         //console.log('error type')
         // storageRef.child(path).put(files[0], metadata).then(function (snapshot) {
         //   console.log('Uploaded file!');

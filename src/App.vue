@@ -25,6 +25,11 @@ export default {
   },
   data: () => ({}),
   created() {
+    // Get Languages
+    this.$store.dispatch('languages/init')
+    // Get Dictionary
+    this.$store.dispatch('dictionary/init')
+    // Check Auth
     this.$store.dispatch('auth/setAuthenticated', storageAuth.Authenticated())
   },
   computed: {
@@ -35,9 +40,9 @@ export default {
   },
   watch: {
     //authenticated(val) {
-      //if(this.$route.path === '/auth') 
-      //console.log(this.$route.path)
-      //if (val && this.$route.path === '/auth') this.$router.push('/')
+    //if(this.$route.path === '/auth') 
+    //console.log(this.$route.path)
+    //if (val && this.$route.path === '/auth') this.$router.push('/')
     //}
   },
   methods: {
